@@ -450,7 +450,7 @@ activate() {
   if [[ "$version" != "$active" ]]; then
     if [[ ! -e $dir/g.lock ]]; then
       cp -fRT "$dir" "$GOROOT"
-      ln -f "$GOROOT/bin/"* "$GOPATH/bin/"
+      ln --symbolic --force "$GOROOT/bin/"* "$GOPATH/bin/"
     else
       abort "Version ${version} installation might be corrupted"
     fi
