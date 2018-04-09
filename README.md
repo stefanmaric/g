@@ -70,7 +70,7 @@ Coming soon.
     -q, --quiet             Disable curl output (if available)
     -d, --download          Download only
     -c, --no-color          Force disabled color output
-    -i, --non-interactive   Prevent promtps
+    -i, --non-interactive   Prevent prompts
     -o, --os                Override operating system
     -a, --arch              Override system architecture
 ```
