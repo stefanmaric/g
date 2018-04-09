@@ -610,7 +610,7 @@ fi
 # create versions dir if it doesn't exist yet.
 #
 
-GO_VERSIONS_DIR=${GO_VERSIONS_DIR:-$GOPATH/.versions}
+GO_VERSIONS_DIR=${GO_VERSIONS_DIR:-$GOROOT/.versions}
 
 if [[ ! -d "$GO_VERSIONS_DIR" ]]; then
   mkdir -p "$GO_VERSIONS_DIR"
