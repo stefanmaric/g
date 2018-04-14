@@ -210,20 +210,20 @@ is_url_ok() {
 
 download() {
   if command -v curl > /dev/null; then
-    local params=("--location")
+    local params=(--location)
 
     if [[ "$QUIET" = true ]]; then
-      params+=("--silent")
+      params+=(--silent)
     else
-      params+=("--progress-bar")
+      params+=(--progress-bar)
     fi
 
     curl "${params[@]}" "$@"
   elif command -v wget > /dev/null; then
-    local params=("--quiet" "-O-")
+    local params=(--quiet -O-)
 
     if [[ ! "$QUIET" = true ]]; then
-      params+=("--show-progress")
+      params+=(--show-progress)
     fi
 
     wget "${params[@]}" "$@"
