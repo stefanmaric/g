@@ -450,7 +450,7 @@ activate() {
   if [[ "$version" != "$active" ]]; then
     if [[ ! -e $dir/g.lock ]]; then
       for file in "$dir/"*; do
-        rm -rf "$GOROOT/$(basename "$file")"
+        rm -rf "${GOROOT:?}/$(basename "$file")"
         cp --recursive --force "$file" "$GOROOT/$(basename "$file")"
       done
 
