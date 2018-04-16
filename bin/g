@@ -187,20 +187,33 @@ handle_sigtstp() {
 }
 
 #
-# Check if the HEAD response of <url> is 200.
+# Check if the HTTP response of <url> is OK, i.e status code is bellow 400.
 #
 
 is_url_ok() {
+  local cmd
+
+  # The --head and --spider options of curl and wget, respectively, triggers and
+  # HEAD request, to prevent downloading the actual content.
   if command -v curl > /dev/null; then
-    curl --head --silent "$1" \
-      | head -n 1 \
-      | grep 200 > /dev/null
+    cmd="curl --silent --head"
   elif command -v wget > /dev/null; then
-    wget --quiet --server-response --spider 2>&1 "$1" \
-      | head -n 1 \
-      | grep 200 > /dev/null
+    cmd="wget --quiet --server-response --spider"
   else
     abort "curl or wget required"
+  fi
+
+  # wget is a bit awkward and using the --server-response option prints the info
+  # to stderr (2) instead of stdout (1), so we need to place a redirect.
+  local http_status="$($cmd 2>&1 $1 | head -n 1 | grep -E -o '[[:digit:]]{3}')"
+
+  # The redirect might mask errors like no connection, so the http status will
+  # be empty in some cases, breaking the arithmetic expression bellow. So handle
+  # empty http_status and treat it as an error as well.
+  if [[ -n "$http_status" ]] && (( "$http_status" < 400 )); then
+    return 0
+  else
+    return 1
   fi
 }
 
