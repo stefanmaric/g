@@ -85,7 +85,7 @@ display_help() {
     -q, --quiet             Disable curl output (if available)
     -d, --download          Download only
     -c, --no-color          Force disabled color output
-    -i, --non-interactive   Prevent prompts
+    -y, --non-interactive   Prevent prompts
     -o, --os                Override operating system
     -a, --arch              Override system architecture
 
@@ -657,7 +657,7 @@ else
       -d|--download) ACTIVATE=false;;
       -q|--quiet) QUIET=true;;
       -c|--no-color) NO_COLOR=true;;
-      -i|--non-interactive) NON_INTERACTIVE=true;;
+      -y|--non-interactive) NON_INTERACTIVE=true;;
       -o|--os) shift; OS=$1;;
       -a|--arch) shift; ARCH=$1;;
       *) __cmd_args+=("$1");;
