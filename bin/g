@@ -464,7 +464,7 @@ activate() {
     if [[ ! -e $dir/g.lock ]]; then
       for file in "$dir/"*; do
         rm -rf "${GOROOT:?}/$(basename "$file")"
-        cp --recursive --force "$file" "$GOROOT/$(basename "$file")"
+        cp -Rf "$file" "$GOROOT/$(basename "$file")"
       done
 
       ln --symbolic --force "$GOROOT/bin/"* "$GOPATH/bin/"
