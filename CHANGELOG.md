@@ -3,6 +3,8 @@ Changelog
 
 ## Unreleased
 
+- Fix unbound var error on install script on MacOS
+
 ## 0.2.0 - 2018-04-22
 
 - Improve documentation
