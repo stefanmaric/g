@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Fix visual glitch while getting remote versions list
 - Fix activation error on MacOS because of `cp` and `ln` long params
 - Fix unbound var error on install script on MacOS
 

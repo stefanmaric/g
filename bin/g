@@ -250,7 +250,7 @@ download() {
 #
 
 get_all_remote_versions() {
-  download "https://golang.org/dl/" \
+  download 2> /dev/null "https://golang.org/dl/" \
     | grep -E -o '\"https://dl.google.com/go/go.*\.tar\.gz\"' \
     | grep -E -o 'go[0-9]+\.[0-9]+(\.[0-9]+)?' \
     | tr -d 'go' \
