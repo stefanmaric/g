@@ -3,6 +3,8 @@ Changelog
 
 ## Unreleased
 
+- Improve documentation
+- Add install script
 - BREAKING: short option for `--non-interactive` went from `-i` to `-y`
 - Improve logic to check for valid download URLs
 - Improve code style and good practices
