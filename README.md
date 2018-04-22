@@ -180,9 +180,9 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md). ♥
 
 ## Acknowledgments
 
-* (Every contributor to this project)[https://github.com/stefanmaric/g/graphs/contributors].
-* The (`n` project)[https://github.com/tj/n], which  `g` is inspired by and based on.
-* The (`n-install` project)[https://github.com/mklement0/n-install], which `g` is also based on.
+* [Every contributor to this project](https://github.com/stefanmaric/g/graphs/contributors).
+* The [`n` project](https://github.com/tj/n), which  `g` is inspired by and based on.
+* The [`n-install` project](https://github.com/mklement0/n-install), which `g` is also based on.
 
 
 ## License
