@@ -3,6 +3,8 @@ Changelog
 
 ## Unreleased
 
+## 0.2.0 - 2018-04-22
+
 - Improve documentation
 - Add install script
 - BREAKING: short option for `--non-interactive` went from `-i` to `-y`
