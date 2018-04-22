@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+
+# MIT License
+#
+# Copyright (c) 2018 Stefan Maric
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Exit on error. Append "|| true" if you expect an error.
+set -o errexit
+# Exit on error inside any functions or subshells.
+set -o errtrace
+# Catch errors in pipes.
+set -o pipefail
+# Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR.
+set -o nounset
+
+GOPATH=${GOPATH:-$HOME/go}
+GOROOT=${GOROOT:-$HOME/.go}
+
+if [[ "$GOPATH" != "/"* ]]; then
+  echo "  Error: \$GOPATH must be an absolute path but it is set to ${GOPATH}"
+  exit 1
+fi
+
+if [[ "$GOROOT" != "/"* ]]; then
+  echo "  Error: \$GOROOT must be an absolute path but it is set to ${GOROOT}"
+  exit 1
+fi
+
+NON_INTERACTIVE=false
+
+G_DOWNLOAD_URL="https://git.io/g-bin"
+
+COMMENT_MESSAGE="g-install: do NOT edit, see https://github.com/stefanmaric/g"
+
+USER_SHELL=$(basename "$SHELL")
+
+SUPPORTED_SHELLS=(
+  bash
+  zsh
+  fish
+)
+
+INSTALLED_SHELLS=()
+
+SELECTED_SHELLS=()
+
+#
+# Check if the given <string> is present in the given <array>.
+#
+
+array_includes() {
+  # First argument is search element.
+  local search_element=$1
+  # The rest is the array to lookup.
+  shift
+
+  local found=1
+
+  for item in "${@}"; do
+    if [[ "$item" = "$search_element" ]]; then
+      found=0
+      break
+    fi
+  done
+
+  return $found
+}
+
+#
+# Download file with cUrl or fallback to wget.
+#
+
+download() {
+  if command -v curl > /dev/null; then
+    local params=(--location --silent --show-error)
+
+    curl "${params[@]}" "$@"
+  elif command -v wget > /dev/null; then
+    local params=(--quiet -O-)
+
+    wget "${params[@]}" "$@"
+  else
+    echo "  Error: curl or wget required"
+    exit 1
+  fi
+}
+
+#
+# Find the proper init file for a given <shell>.
+#
+
+get_dotfile_for_shell() {
+  case "$1" in
+    bash)
+      case "$(uname | tr '[:upper:]' '[:lower:]')" in
+        linux|freebsd) echo "$HOME/.bashrc";;
+        darwin) echo "$HOME/.bash_profile";;
+      esac
+    ;;
+    fish) echo "$HOME/.config/fish/config.fish";;
+    zsh) echo "$HOME/.zshrc";;
+  esac
+}
+
+#
+# Get line that properly sets GOROOT, GOPATH, and PATH for a given <shell>.
+#
+
+get_line_for_shell() {
+  case "$1" in
+    bash|zsh)
+      printf '%s %s %s %s' \
+        "export GOPATH=\"${GOPATH/#$HOME/\$HOME}\";" \
+        "export GOROOT=\"${GOROOT/#$HOME/\$HOME}\";" \
+        "PATH=\"\$GOPATH/bin:\$PATH\";" \
+        "# $COMMENT_MESSAGE"
+    ;;
+    fish)
+      printf '%s %s %s %s' \
+        "set -gx GOPATH ${GOPATH/#$HOME/\$HOME};" \
+        "set -gx GOROOT ${GOROOT/#$HOME/\$HOME};" \
+        "set -gx PATH \$GOPATH/bin \$PATH;" \
+        "# $COMMENT_MESSAGE"
+    ;;
+  esac
+}
+
+#
+# Download g, put it in the right place, and give it execution rights.
+#
+
+install_g() {
+  echo "  Info: creating dir $GOPATH/bin"
+  mkdir -p "$GOPATH/bin"
+  echo "  Info: copying g in $GOPATH/bin/g"
+  download "$G_DOWNLOAD_URL" > "$GOPATH/bin/g"
+  echo "  Info: setting permissions"
+  chmod +x "$GOPATH/bin/g"
+}
+
+#
+# Set environment variables in all selected shells.
+#
+
+configure_selected_shells() {
+  for shell in "${SELECTED_SHELLS[@]}"; do
+    local dotfile_path=$(get_dotfile_for_shell "$shell")
+    local config_line=$(get_line_for_shell "$shell")
+
+    if test -f "$dotfile_path" && grep --quiet "g-install" "$dotfile_path"; then
+      echo "  Info: skipping $shell because g has been configured already in $dotfile_path"
+    else
+      echo "  Info: configuring $shell in $dotfile_path"
+      echo "$config_line" >> "$dotfile_path"
+    fi
+  done
+}
+
+#
+# Start the installation process.
+#
+
+initiate() {
+  echo "You are about to install g, the gluten-free go version manager at:"
+  echo
+  echo "  $GOPATH/bin/g"
+  echo
+  echo "The following environment variables:"
+  echo
+  printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
+  printf '%10s : %s \n' "\$GOPATH" "$GOPATH"
+  printf '%10s : %s \n' "\$PATH" "$GOPATH/bin"
+  echo
+  echo "  are going to be set in:"
+  echo
+  for shell in "${SELECTED_SHELLS[@]}"; do
+    printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
+  done
+  echo
+  read -p "Do you want to continue? [y/N] " -n 1 -r RESPONSE
+  echo
+  echo
+
+  if [[ "$RESPONSE" = "y" ]]; then
+    install_g
+    configure_selected_shells
+    echo
+    echo "g has been successfully installed"
+    echo "NOTE: to start using g, make sure to restart this shell session"
+    echo "For more information, see: https://github.com/stefanmaric/g"
+  else
+    echo "Aborted"
+    exit 1
+  fi
+}
+
+#
+# Collect installed shells we support and pre-select user's login shell.
+#
+
+while IFS= read -r shell_path; do
+  shell_name=$(basename "$shell_path")
+
+  # Collect only supported shells.
+  if array_includes "$shell_name" "${SUPPORTED_SHELLS[@]}"; then
+    INSTALLED_SHELLS+=("$shell_name")
+
+    # Select user's shell for configuration by default.
+    if [[ "$shell_name" = "$USER_SHELL" ]]; then
+      SELECTED_SHELLS+=("$shell_name")
+    fi
+  fi
+# This file lists abs paths for installed shells. This at-bottom syntax is to
+# prevent subshells and allow for the loop code to modify global variables.
+# See: https://stackoverflow.com/questions/16854280/
+done < <(grep '^/' /etc/shells)
+
+# This script is useless if it doesn't support any of user's installed shells.
+if [[ "${#INSTALLED_SHELLS[@]}" -eq 0 ]]; then
+  echo "  Error: none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
+  exit 1
+fi
+
+
+#
+# Handle arguments.
+#
+
+while test $# -ne 0; do
+  case $1 in
+    -y|--non-interactive) NON_INTERACTIVE=true;;
+    *)
+      if array_includes "$1" "${INSTALLED_SHELLS[@]}"; then
+        SELECTED_SHELLS+=("$1")
+      elif array_includes "$1" "${SUPPORTED_SHELLS[@]}"; then
+        echo "  Error: $1 has been selected but is not installed"
+        exit 1
+      else
+        echo "  Error: unknown argument or shell \"$1\""
+        exit 1
+      fi
+    ;;
+  esac
+  shift
+done
+
+initiate
