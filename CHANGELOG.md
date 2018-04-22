@@ -3,7 +3,7 @@ Changelog
 
 ## Unreleased
 
-- Fix activation error on MacOS because of `cp` params
+- Fix activation error on MacOS because of `cp` and `ln` long params
 - Fix unbound var error on install script on MacOS
 
 ## 0.2.0 - 2018-04-22
