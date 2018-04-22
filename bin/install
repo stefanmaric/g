@@ -196,6 +196,12 @@ initiate() {
   echo
   echo "  $GOPATH/bin/g"
   echo
+
+  if [[ "${#SELECTED_SHELLS[@]}" -eq 0 ]]; then
+    echo "  Error: no shell has been selected for installation"
+    exit 1
+  fi
+
   echo "The following environment variables:"
   echo
   printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
@@ -208,6 +214,7 @@ initiate() {
     printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
   done
   echo
+
   read -p "Do you want to continue? [y/N] " -n 1 -r RESPONSE < "$stdin"
   echo
   echo
