@@ -4,6 +4,8 @@ Simple go version manager, gluten-free.
 
 [![license](https://img.shields.io/github/license/stefanmaric/g.svg)](./LICENSE)
 
+<div align="center"><img src="screencast.gif" alt="screencast"></div>
+
 ## Why?
 
 Existing version managers build go from source, have too many dependencies, pollute the PATH, and/or require you to use a specific shell environment. `g` aims to be as unobtrusive and portable as possible.
