@@ -179,6 +179,19 @@ configure_selected_shells() {
 #
 
 initiate() {
+  local stdin
+
+  # Determine where to read user input from.
+  # Borrowed from:
+  # https://github.com/mklement0/n-install/blob/0cf509b3a873baa30cf40ce6b2e1db2e02172de0/bin/n-install#L705
+  if [[ -f "$BASH_SOURCE" ]]; then
+    # When running the script as a binary file, use stdin.
+    stdin="/dev/stdin"
+  else
+    # When running in a pipe, as it is usually intended to be, read from the tty.
+    stdin="/dev/tty"
+  fi
+
   echo "You are about to install g, the gluten-free go version manager at:"
   echo
   echo "  $GOPATH/bin/g"
@@ -195,7 +208,7 @@ initiate() {
     printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
   done
   echo
-  read -p "Do you want to continue? [y/N] " -n 1 -r RESPONSE
+  read -p "Do you want to continue? [y/N] " -n 1 -r RESPONSE < "$stdin"
   echo
   echo
 
