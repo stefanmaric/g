@@ -15,20 +15,21 @@ Existing version managers build go from source, have too many dependencies, poll
 
 ## Features
 
-* Works no matter what shell you're using as long as `$GOPATH` and `$GOROOT` are exported, which are not specific to `g` but idiomatic to `go`.
+* Works no matter what shell you use as long as `$GOPATH` and `$GOROOT` are exported, which are not specific to `g` but idiomatic to `go`.
 * No need to `source` functions in your shell config.
 * Single bash script that ideally lives where your go binaries live.
 * Downloads pre-built binaries so it is fast and...
 * ...requires no git, no mercurial, no gcc, no xcode, etc.
 * `curl` and `wget` first-class support alike.
 * Colorful UI and interactive but safe to pipe and use in automated scripts.
+* Get started with a single line.
 
 
 ## Requirements
 
 * macOS, Linux or BSD environment - should work just fine on [Bash for Windows (WSL)](https://docs.microsoft.com/en-us/windows/wsl/about).
 * Bash 3+, check with `bash --version`
-* Either [`curl`](https://en.wikipedia.org/wiki/CURL) **or** [`wget`](https://en.wikipedia.org/wiki/Wget), check with `curl -V` or `wget -V` respectively.
+* Either [`curl`](https://en.wikipedia.org/wiki/CURL) or [`wget`](https://en.wikipedia.org/wiki/Wget), check with `curl -V` or `wget -V` respectively.
 
 Not strictly necessary, but highly recommended, to completely remove any previous go installation — just to prevent any weird outcome.
 
@@ -66,6 +67,8 @@ The install script currently supports the following shells:
 * bash
 * zsh
 * fish
+
+That doesn't mean you cannot use `g` with other shells like `tcsh`, just proceed with the [manual installation](#manually).
 
 The install script is going to select your default shell for configuration. You might see what your default shell is by running:
 
@@ -167,12 +170,24 @@ curl -sSL https://git.io/g-install | bash
 - [ ] Write some tests
 
 
-## The alternatives
+## The alternatives (and why I don't like them)
 
 * https://github.com/moovweb/gvm
-* https://github.com/kennyp/asdf-golang
+    - Too many features.
+    - Builds from source, i.e, requires gcc, make, xcode, etc.
+    - Requires git and mercurial.
+    - Requires bootstrapping, i.e., install go 1.4 first.
+    - Specific to a shell, i.e., doesn't work with fishshell.
 * https://github.com/hit9/oo
+    - Pretty much same as gvm.
+* https://github.com/kennyp/asdf-golang
+    - Requires [asdf](https://github.com/asdf-vm/asdf).
 * https://github.com/andrewkroh/gvm
+    - Bash, batch and powershell support only.
+    - Cumbersome to use.
+* https://github.com/MakeNowJust/govm
+    - Builds from source.
+    - Requires python 2.
 
 
 ## Contributing
