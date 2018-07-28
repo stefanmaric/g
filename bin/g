@@ -55,7 +55,7 @@ fi
 #
 
 display_g_version() {
-  echo "0.2.0"
+  echo "0.3.0"
 }
 
 display_help() {

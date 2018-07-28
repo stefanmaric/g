@@ -3,9 +3,13 @@ Changelog
 
 ## Unreleased
 
+## 0.3.0 - 2018-07-28
+
 - Fix visual glitch while getting remote versions list
 - Fix activation error on MacOS because of `cp` and `ln` long params
 - Fix unbound var error on install script on MacOS
+- Exclude beta version from version list
+  * Beta versions can still be installed if you provide the version, e.g. `1.11beta2`
 
 ## 0.2.0 - 2018-04-22
 
