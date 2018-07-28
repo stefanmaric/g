@@ -252,6 +252,7 @@ download() {
 get_all_remote_versions() {
   download 2> /dev/null "https://golang.org/dl/" \
     | grep -E -o '\"https://dl.google.com/go/go.*\.tar\.gz\"' \
+    | grep -v 'beta' \
     | grep -E -o 'go[0-9]+\.[0-9]+(\.[0-9]+)?' \
     | tr -d 'go' \
     | sort -u -k 1,1n -k 2,2n -k 3,3n -t .
