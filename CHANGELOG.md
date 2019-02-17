@@ -3,6 +3,9 @@ Changelog
 
 ## Unreleased
 
+- Improve handling of unstable versions
+
+
 ## 0.3.0 - 2018-07-28
 
 - Fix visual glitch while getting remote versions list

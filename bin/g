@@ -252,8 +252,7 @@ download() {
 get_all_remote_versions() {
   download 2> /dev/null "https://golang.org/dl/" \
     | grep -E -o '\"https://dl.google.com/go/go.*\.tar\.gz\"' \
-    | grep -v 'beta' \
-    | grep -E -o 'go[0-9]+\.[0-9]+(\.[0-9]+)?' \
+    | grep -E -o 'go[[:digit:]]+\.[[:digit:]]+(\.[[:digit:]]+)?\b' \
     | tr -d 'go' \
     | sort -u -k 1,1n -k 2,2n -k 3,3n -t .
 }
@@ -283,7 +282,7 @@ get_installed_versions() {
 
 get_current_version() {
   if command -v go &> /dev/null; then
-    local current=$(go version | grep -E -o '[0-9]+\.[0-9]+(\.[0-9]+)?')
+    local current=$(go version | cut -d ' ' -f3 | tr -d 'go')
     if diff &> /dev/null "$GO_VERSIONS_DIR/$current/bin/go" "$(command -v go)"; then
       echo "$current"
     fi
