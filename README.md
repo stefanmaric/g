@@ -22,6 +22,7 @@ Existing version managers build go from source, have too many dependencies, poll
 * ...requires no git, no mercurial, no gcc, no xcode, etc.
 * `curl` and `wget` first-class support alike.
 * Colorful UI and interactive but safe to pipe and use in automated scripts.
+* self-upgrade command to keep up-to-date
 * Get started with a single line.
 
 
@@ -141,6 +142,7 @@ curl -sSL https://git.io/g-install | bash
     g prune                     Remove all versions except the current version
     g list                      Output installed go versions
     g list-all                  Output all available go versions
+    g self-upgrade              Upgrades g to the latest version
     g help                      Display help information, same as g --help
 
   Options:
@@ -162,9 +164,9 @@ curl -sSL https://git.io/g-install | bash
     - [ ] Improve a bit more
 - [x] Install script
     - [ ] Add support for more shells
-    - [ ] Add interactive multi-select UI to select shells
-    - [ ] Add non-interactive mode
-- [ ] Update script
+    - [ ] ~~Add interactive multi-select UI to select shells~~ (this is overkill)
+    - [x] Add non-interactive mode
+- [x] Upgrade script
 - [ ] Improve the --quiet and --non-interactive modifiers
 - [ ] Test it on diff platforms
 - [ ] Write some tests

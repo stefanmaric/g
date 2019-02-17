@@ -44,11 +44,11 @@ if [[ "$GOROOT" != "/"* ]]; then
   exit 1
 fi
 
-IS_UPDATING=false
+IS_UPGRADING=false
 CURRENT_VERSION=
 
 if command -v g > /dev/null; then
-  IS_UPDATING=true
+  IS_UPGRADING=true
   CURRENT_VERSION=$(command g --version)
 fi
 
@@ -201,8 +201,8 @@ initiate() {
     stdin="/dev/tty"
   fi
 
-  if [[ "$IS_UPDATING" = true ]]; then
-    echo "You are about to update g, the gluten-free go version manager at:"
+  if [[ "$IS_UPGRADING" = true ]]; then
+    echo "You are about to upgrade g, the gluten-free go version manager at:"
   else
     echo "You are about to install g, the gluten-free go version manager at:"
   fi
@@ -216,7 +216,7 @@ initiate() {
     exit 1
   fi
 
-  if [[ "$IS_UPDATING" = false ]]; then
+  if [[ "$IS_UPGRADING" = false ]]; then
     echo "The following environment variables:"
     echo
     printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
@@ -243,11 +243,11 @@ initiate() {
     configure_selected_shells
     echo
 
-    if [[ "$IS_UPDATING" = true ]]; then
+    if [[ "$IS_UPGRADING" = true ]]; then
       if [[ "$CURRENT_VERSION" = "$(command g --version)" ]]; then
         echo "g is already up-to-date"
       else
-        echo "g has been successfully updated from ${CURRENT_VERSION} to $(command g --version)"
+        echo "g has been successfully upgraded from ${CURRENT_VERSION} to $(command g --version)"
       fi
     else
       echo "g has been successfully installed"

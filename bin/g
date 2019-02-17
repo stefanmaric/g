@@ -76,6 +76,7 @@ display_help() {
     g prune                     Remove all versions except the current version
     g list                      Output installed go versions
     g list-all                  Output all available go versions
+    g self-upgrade              Upgrades g to the latest version
     g help                      Display help information, same as g --help
 
   Options:
@@ -613,6 +614,17 @@ run_with_version() {
   fi
 }
 
+self_upgrade() {
+  if command -v curl > /dev/null; then
+    curl -sSL https://git.io/g-install | bash -s -- -y
+  elif command -v wget > /dev/null; then
+    wget -qO- https://git.io/g-install | bash -s -- -y
+  else
+    echo "  Error: curl or wget required"
+    exit 1
+  fi
+}
+
 #
 # Make sure required go env vars are available.
 #
@@ -651,7 +663,7 @@ if [[ $# -eq 0 ]]; then
 else
   while test $# -ne 0; do
     case $1 in
-      install|run|remove|prune|which|list|list-all) __cmd=$1;;
+      install|run|remove|prune|which|list|list-all|self-upgrade) __cmd=$1;;
       -h|--help|help) display_help; exit;;
       -v|--version) display_g_version; exit;;
       -d|--download) ACTIVATE=false;;
@@ -673,6 +685,7 @@ else
     which) display_bin_path_for_version "${__cmd_args[@]}";;
     list) display_installed_with_selected "$(get_current_version)";;
     list-all) display_remote_versions;;
+    self-upgrade) self_upgrade;;
     *) error "Invalid command $__cmd"; display_help; exit 1;;
   esac
 fi
