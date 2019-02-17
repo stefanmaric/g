@@ -4,6 +4,7 @@ Changelog
 ## Unreleased
 
 - Improve handling of unstable versions
+- Implement proper non-interactive mode for install script
 
 
 ## 0.3.0 - 2018-07-28

@@ -180,6 +180,7 @@ configure_selected_shells() {
 
 initiate() {
   local stdin
+  local response
 
   # Determine where to read user input from.
   # Borrowed from:
@@ -215,11 +216,14 @@ initiate() {
   done
   echo
 
-  read -p "Do you want to continue? [y/N] " -n 1 -r RESPONSE < "$stdin"
+  test "$NON_INTERACTIVE" = false && \
+    read -p "Do you want to continue? [y/N] " -n 1 -r response < "$stdin" || \
+    response=y
+
   echo
   echo
 
-  if [[ "$RESPONSE" = "y" ]]; then
+  if [[ "$response" = "y" ]]; then
     install_g
     configure_selected_shells
     echo
