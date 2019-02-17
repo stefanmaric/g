@@ -44,6 +44,14 @@ if [[ "$GOROOT" != "/"* ]]; then
   exit 1
 fi
 
+IS_UPDATING=false
+CURRENT_VERSION=
+
+if command -v g > /dev/null; then
+  IS_UPDATING=true
+  CURRENT_VERSION=$(command g --version)
+fi
+
 NON_INTERACTIVE=false
 
 G_DOWNLOAD_URL="https://git.io/g-bin"
@@ -193,7 +201,12 @@ initiate() {
     stdin="/dev/tty"
   fi
 
-  echo "You are about to install g, the gluten-free go version manager at:"
+  if [[ "$IS_UPDATING" = true ]]; then
+    echo "You are about to update g, the gluten-free go version manager at:"
+  else
+    echo "You are about to install g, the gluten-free go version manager at:"
+  fi
+
   echo
   echo "  $GOPATH/bin/g"
   echo
@@ -203,33 +216,46 @@ initiate() {
     exit 1
   fi
 
-  echo "The following environment variables:"
-  echo
-  printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
-  printf '%10s : %s \n' "\$GOPATH" "$GOPATH"
-  printf '%10s : %s \n' "\$PATH" "$GOPATH/bin"
-  echo
-  echo "  are going to be set in:"
-  echo
-  for shell in "${SELECTED_SHELLS[@]}"; do
-    printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
-  done
-  echo
+  if [[ "$IS_UPDATING" = false ]]; then
+    echo "The following environment variables:"
+    echo
+    printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
+    printf '%10s : %s \n' "\$GOPATH" "$GOPATH"
+    printf '%10s : %s \n' "\$PATH" "$GOPATH/bin"
+    echo
+    echo "  are going to be set in:"
+    echo
+    for shell in "${SELECTED_SHELLS[@]}"; do
+      printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
+    done
+    echo
+  fi
 
   test "$NON_INTERACTIVE" = false && \
-    read -p "Do you want to continue? [y/N] " -n 1 -r response < "$stdin" || \
+    read -p "Do you want to continue? [y/N] " -n 1 -r response < "$stdin" && \
+    echo || \
     response=y
 
-  echo
   echo
 
   if [[ "$response" = "y" ]]; then
     install_g
     configure_selected_shells
     echo
-    echo "g has been successfully installed"
-    echo "NOTE: to start using g, make sure to restart this shell session"
-    echo "For more information, see: https://github.com/stefanmaric/g"
+
+    if [[ "$IS_UPDATING" = true ]]; then
+      if [[ "$CURRENT_VERSION" = "$(command g --version)" ]]; then
+        echo "g is already up-to-date"
+      else
+        echo "g has been successfully updated from ${CURRENT_VERSION} to $(command g --version)"
+      fi
+    else
+      echo "g has been successfully installed"
+      echo "NOTE: to start using g, make sure to restart this shell session"
+      echo "For more information, see: https://github.com/stefanmaric/g"
+    fi
+
+    echo
   else
     echo "Aborted"
     exit 1
