@@ -35,9 +35,7 @@ Existing version managers build go from source, have too many dependencies, poll
 Not strictly necessary, but highly recommended, to completely remove any previous go installation — just to prevent any weird outcome.
 
 
-## Install
-
-### Single line
+## Single-line Installation
 
 **IMPORTANT**: Before you continue, I encourage you to [read the install script](https://git.io/g-install); never trust someone telling you to run random commands.
 
@@ -61,7 +59,7 @@ That will download the [`g` script](./bin/g), put it inside `$GOPATH/bin/`, give
 source ~/.zshrc
 ```
 
-#### Shell support
+### Shell support
 
 The install script currently supports the following shells:
 
@@ -69,7 +67,7 @@ The install script currently supports the following shells:
 * zsh
 * fish
 
-That doesn't mean you cannot use `g` with other shells like `tcsh`, just proceed with the [manual installation](#manually).
+That doesn't mean you cannot use `g` with other shells like `tcsh`, just proceed with the [manual installation](#manual-installation).
 
 The install script is going to select your default shell for configuration. You might see what your default shell is by running:
 
@@ -89,7 +87,7 @@ You might as well configure several shells, but that's usually not required:
 curl -sSL https://git.io/g-install | bash -s -- fish bash zsh
 ```
 
-#### Changing defaults
+### Changing defaults
 
 By default, these go environment variables are used:
 
@@ -116,12 +114,17 @@ set -gx GOPATH ~/MyProjects/go-projects
 curl -sSL https://git.io/g-install | bash
 ```
 
-### Manually
+## Manual Installation
 
 1. Make sure to export the `$GOPATH` & `$GOROOT` environment variables and add `$GOPATH/bin` to your `PATH`.
 2. Grab a copy of the [`./bin/g`](./bin/g) script and put it anywhere available in your `PATH` — inside `$GOPATH/bin/` is a good option.
 3. Give the script execution rights with `chmod +x $GOPATH/bin/g`.
 4. Restart your shell session to make sure the env variables are loaded.
+
+
+## Upgrading
+
+`g` includes a `self-upgrade` command you can run to get the latest version of `g`. This command simply runs the install script once again.
 
 
 ## Usage
