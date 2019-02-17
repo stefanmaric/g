@@ -3,12 +3,14 @@ Changelog
 
 ## Unreleased
 
+
+## 0.4.0 - 2019-02-17
+
 - Improve handling of unstable versions
 - Implement proper non-interactive mode for install script
 - Improve the install script to also double as updater
 - Add self-upgrade command
 - Document how to upgrade on README
-
 
 ## 0.3.0 - 2018-07-28
 
