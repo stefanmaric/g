@@ -160,6 +160,53 @@ curl -sSL https://git.io/g-install | bash
     -a, --arch              Override system architecture
 ```
 
+## Uninstall
+
+`g` is a single bash script that acts like a binary that's available in your `$PATH`. If you setup `g` with the install script, its removal should be pretty straight forward.
+
+First of all, get some info about your system:
+
+```shell
+echo $SHELL
+echo $GOROOT
+echo $GOPATH
+command -v g
+```
+
+You will notice the `g` file lives inside your `$GOPATH/bin/` directory. If you only want to remove `g` and keep your currently installed `go` binaries and related files, simply delete `g`:
+
+```shell
+# If you're using bash or zsh:
+rm "$(command -v g)"
+
+# If you're using fish:
+rm (command -v g)
+```
+
+Now, if you want to remove everything, first **be sure to backup** your projects inside `$GOROOT`, if any. Then remove everything inside `$GOROOT` and `$GOPATH`:
+
+```shell
+rm -rf $GOPATH $GOROOT
+```
+
+Then open your shell config file with your text editor of choice and look of for a line that includes `g-install` to remove it. These are the locations used by the install script:
+
+```shell
+# bash on MacOS
+~/.bash_profile
+
+# bash on linux
+~/.bashrc
+
+# zsh
+~/.zshrc
+
+# fish shell
+~/.config/fish/config.fish
+```
+
+At this point you would have removed `g` and `go` entirely.
+
 
 ## TODO
 

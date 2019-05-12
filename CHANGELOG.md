@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Add instructions for removal on README
 - Make the detection of previously installed g stricter
 
 ## 0.4.0 - 2019-02-17
