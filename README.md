@@ -222,22 +222,27 @@ At this point you would have removed `g` and `go` entirely.
 - [ ] Write some tests
 
 
-## The alternatives (and why I don't like them)
+## The alternatives (and why I prefer `g`)
 
-* https://github.com/moovweb/gvm
+* [moovweb/gvm](https://github.com/moovweb/gvm)
     - Too many features.
     - Builds from source, i.e, requires gcc, make, xcode, etc.
     - Requires git and mercurial.
     - Requires bootstrapping, i.e., install go 1.4 first.
     - Specific to a shell, i.e., doesn't work with fishshell.
-* https://github.com/hit9/oo
-    - Pretty much same as gvm.
-* https://github.com/kennyp/asdf-golang
-    - Requires [asdf](https://github.com/asdf-vm/asdf).
-* https://github.com/andrewkroh/gvm
+* [syndbg/goenv](https://github.com/syndbg/goenv)
+    - Too many features and weird DX.
+    - Uses an hard-coded list of go versions...
+    - ...thus you have to upgrade `goenv` before installing a new version of go.
+    - Adds a lot to your env and PATH.
+* [hit9/oo](https://github.com/hit9/oo)
+    - Pretty much same as `gvm`.
+* [asdf-golang](https://github.com/kennyp/asdf-golang)
+    - Depends on [asdf](https://github.com/asdf-vm/asdf).
+* [andrewkroh/gvm](https://github.com/andrewkroh/gvm)
     - Bash, batch and powershell support only.
     - Cumbersome to use.
-* https://github.com/MakeNowJust/govm
+* [MakeNowJust/govm](https://github.com/MakeNowJust/govm)
     - Builds from source.
     - Requires python 2.
 

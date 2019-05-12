@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Add goenv to the alternatives list on README
 - Add instructions for removal on README
 - Make the detection of previously installed g stricter
 
