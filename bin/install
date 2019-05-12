@@ -47,7 +47,7 @@ fi
 IS_UPGRADING=false
 CURRENT_VERSION=
 
-if command -v g > /dev/null; then
+if command -v g > /dev/null && [[ "$(command -v g)" == "$GOPATH"* ]]; then
   IS_UPGRADING=true
   CURRENT_VERSION=$(command g --version)
 fi
