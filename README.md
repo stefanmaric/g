@@ -216,7 +216,7 @@ At this point you would have removed `g` and `go` entirely.
     - [ ] Add support for more shells
     - [ ] ~~Add interactive multi-select UI to select shells~~ (this is overkill)
     - [x] Add non-interactive mode
-    - [ ] Warn about installing in an uncommon path. See #5
+    - [x] Warn about installing in an uncommon path. See #5
 - [x] Upgrade script
 - [ ] Add support to select `unstable` versions
 - [ ] Install requested version when `g run` cannot find it. See #3

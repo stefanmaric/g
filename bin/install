@@ -229,6 +229,17 @@ initiate() {
       printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
     done
     echo
+
+    if [[ "$GOPATH" != "$HOME/go" ]]; then
+      echo "  Warning: using a non-default \$GOPATH: ${GOPATH/#$HOME/\$HOME}"
+    fi
+    if [[ "$GOROOT" != "$HOME/.go" ]]; then
+      echo "  Warning: using a non-default \$GOROOT: ${GOROOT/#$HOME/\$HOME}"
+    fi
+    if [[ "$GOPATH" != "$HOME/go" ]] || [[ "$GOROOT" != "$HOME/.go" ]]; then
+      echo "    This usually presents no problem, but be sure it is intended."
+      echo
+    fi
   fi
 
   test "$NON_INTERACTIVE" = false && \
