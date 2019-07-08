@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Normalize messages styles and wording
 - Support double-dash to signal end-of-params
 - Tweak README file
 - Offer to install latest go version after installing g

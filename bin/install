@@ -35,12 +35,12 @@ GOPATH=${GOPATH:-$HOME/go}
 GOROOT=${GOROOT:-$HOME/.go}
 
 if [[ "$GOPATH" != "/"* ]]; then
-  echo "  Error: \$GOPATH must be an absolute path but it is set to ${GOPATH}"
+  echo "  ERROR: \$GOPATH must be an absolute path but it is set to ${GOPATH}"
   exit 1
 fi
 
 if [[ "$GOROOT" != "/"* ]]; then
-  echo "  Error: \$GOROOT must be an absolute path but it is set to ${GOROOT}"
+  echo "  ERROR: \$GOROOT must be an absolute path but it is set to ${GOROOT}"
   exit 1
 fi
 
@@ -118,7 +118,7 @@ download() {
 
     wget "${params[@]}" "$@"
   else
-    echo "  Error: curl or wget required"
+    echo "  ERROR: curl or wget required"
     exit 1
   fi
 }
@@ -168,11 +168,11 @@ get_line_for_shell() {
 #
 
 install_g() {
-  echo "  Info: creating dir $GOPATH/bin"
+  echo "  info: creating dir $GOPATH/bin"
   mkdir -p "$GOPATH/bin"
-  echo "  Info: copying g in $GOPATH/bin/g"
+  echo "  info: copying g in $GOPATH/bin/g"
   download "$G_DOWNLOAD_URL" > "$GOPATH/bin/g"
-  echo "  Info: setting permissions"
+  echo "  info: setting permissions"
   chmod +x "$GOPATH/bin/g"
 }
 
@@ -186,9 +186,9 @@ configure_selected_shells() {
     local config_line=$(get_line_for_shell "$shell")
 
     if test -f "$dotfile_path" && grep --quiet "g-install" "$dotfile_path"; then
-      echo "  Info: skipping $shell because g has been configured already in $dotfile_path"
+      echo "  info: skipping $shell because g has been configured already in $dotfile_path"
     else
-      echo "  Info: configuring $shell in $dotfile_path"
+      echo "  info: configuring $shell in $dotfile_path"
       echo "$config_line" >> "$dotfile_path"
     fi
   done
@@ -213,7 +213,7 @@ initiate() {
   echo
 
   if [[ "${#SELECTED_SHELLS[@]}" -eq 0 ]]; then
-    echo "  Error: no shell has been selected for installation"
+    echo "  ERROR: no shell has been selected for installation"
     exit 1
   fi
 
@@ -232,10 +232,10 @@ initiate() {
     echo
 
     if [[ "$GOPATH" != "$HOME/go" ]]; then
-      echo "  Warning: using a non-default \$GOPATH: ${GOPATH/#$HOME/\$HOME}"
+      echo "  warning: using a non-default \$GOPATH: ${GOPATH/#$HOME/\$HOME}"
     fi
     if [[ "$GOROOT" != "$HOME/.go" ]]; then
-      echo "  Warning: using a non-default \$GOROOT: ${GOROOT/#$HOME/\$HOME}"
+      echo "  warning: using a non-default \$GOROOT: ${GOROOT/#$HOME/\$HOME}"
     fi
     if [[ "$GOPATH" != "$HOME/go" ]] || [[ "$GOROOT" != "$HOME/.go" ]]; then
       echo "    This usually presents no problem, but be sure it is intended."
@@ -312,7 +312,7 @@ done < <(grep '^/' /etc/shells)
 
 # This script is useless if it doesn't support any of user's installed shells.
 if [[ "${#INSTALLED_SHELLS[@]}" -eq 0 ]]; then
-  echo "  Error: none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
+  echo "  ERROR: none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
   exit 1
 fi
 
@@ -328,10 +328,10 @@ while test $# -ne 0; do
       if array_includes "$1" "${INSTALLED_SHELLS[@]}"; then
         SELECTED_SHELLS+=("$1")
       elif array_includes "$1" "${SUPPORTED_SHELLS[@]}"; then
-        echo "  Error: $1 has been selected but is not installed"
+        echo "  ERROR: $1 has been selected but is not installed"
         exit 1
       else
-        echo "  Error: unknown argument or shell \"$1\""
+        echo "  ERROR: unknown argument or shell \"$1\""
         exit 1
       fi
     ;;

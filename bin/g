@@ -129,7 +129,7 @@ style_text() {
 #
 
 info() {
-  printf '%20s : %s\n' "$(style_text 94 "$1")" "$(style_text 2 "$2")"
+  printf '%22s: %s\n' "$(style_text 94 "$1")" "$(style_text 2 "$2")"
 }
 
 #
@@ -137,7 +137,7 @@ info() {
 #
 
 error() {
-  printf '\n  %s\n\n' "$(style_text 31 "Error: $*")"
+  printf '%22s: %s\n' "$(style_text 31 ERROR)" "$(style_text 31 "$*")"
 }
 
 #
@@ -145,7 +145,10 @@ error() {
 #
 
 abort() {
-  error "$*" && exit 1
+  echo
+  error "$*"
+  echo
+  exit 1
 }
 
 #
@@ -206,7 +209,7 @@ handle_sigtstp() {
 is_url_ok() {
   local cmd
 
-  # The --head and --spider options of curl and wget, respectively, triggers and
+  # The --head and --spider options of curl and wget, respectively, triggers an
   # HEAD request, to prevent downloading the actual content.
   if command -v curl > /dev/null; then
     cmd="curl --silent --head"
@@ -398,7 +401,7 @@ display_remote_versions() {
 
 open_interactive_ui() {
   if [[ "$NON_INTERACTIVE" = true ]]; then
-    abort "Cannot run interactive UI in non-interactive shell"
+    abort "cannot run interactive UI in non-interactive shell"
   fi
 
   enter_fullscreen
@@ -482,7 +485,7 @@ activate() {
 
       ln -sf "$GOROOT/bin/"* "$GOPATH/bin/"
     else
-      abort "Version ${version} installation might be corrupted"
+      abort "version ${version} installation might be corrupted"
     fi
   fi
 }
@@ -508,7 +511,7 @@ install() {
   fi
 
   echo
-  info install "$version"
+  info "installing" "$version"
 
   local url=$(get_tarball_url "$version")
 
@@ -516,7 +519,7 @@ install() {
     abort "invalid version $version"
   fi
 
-  info mkdir "$dir"
+  info "location" "$dir"
 
   if mkdir -p "$dir"; then
     touch "$dir/g.lock"
@@ -526,7 +529,7 @@ install() {
 
   cd "$dir" || abort "cannot cd into $dir"
 
-  info fetch "$url"
+  info "downloading" "$url"
 
   download "$url" | tar -zx --strip-components=1
 
@@ -536,7 +539,7 @@ install() {
 
   if [[ "$ACTIVATE" = true ]]; then
     activate "$version"
-    info installed "$(go version)"
+    info "installed" "$(go version)"
   fi
   echo
 }
@@ -555,7 +558,7 @@ remove_versions() {
   while test $# -ne 0; do
     local version=$1
     [ "$version" == "$active" ] && abort "cannot remove currently active version ($active)"
-    info remove "$version"
+    info "remove" "$version"
     rm -rf "${GO_VERSIONS_DIR:?}/$version"
     shift
   done
@@ -621,6 +624,7 @@ run_with_version() {
   shift # remove version
 
   if [[ ! -x "$bin" ]]; then
+    echo
     test "$NON_INTERACTIVE" = false && \
       read -p "$(info "info" "$version is not installed, install it now? [y/N] ")" \
       -n 1 -r response < "$STDIN" || \
