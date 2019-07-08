@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Add support for listing and installing unstable versions
 - Prevent bugs in config files without final newline
 - Ensure the modified PATH is exported on bash and zsh
 - Prevent multiple selection of the same shell in g-install

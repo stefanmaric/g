@@ -39,6 +39,7 @@ ACTIVATE=true
 QUIET=false
 NO_COLOR=false
 NON_INTERACTIVE=false
+INCLUDE_UNSTABLE=false
 STDIN=
 ARCH=
 OS=
@@ -101,6 +102,7 @@ display_help() {
     -y, --non-interactive   Prevent prompts
     -o, --os                Override operating system
     -a, --arch              Override system architecture
+    -u, --unstable          Include unstable versions in list
 
 EOF
 }
@@ -269,11 +271,20 @@ download() {
 #
 
 get_all_remote_versions() {
-  download 2> /dev/null "https://golang.org/dl/" \
-    | grep -E -o '\"https://dl.google.com/go/go.*\.tar\.gz\"' \
-    | grep -E -o 'go[[:digit:]]+\.[[:digit:]]+(\.[[:digit:]]+)?\b' \
+  local pattern
+
+  if [[ "$INCLUDE_UNSTABLE" = true ]]; then
+    pattern='go[[:digit:]]+(\.[[:alnum:]]+)+\b'
+  else
+    pattern='go[[:digit:]]+(\.[[:digit:]]+)+\b'
+  fi
+
+  download 2> /dev/null "https://go.googlesource.com/go/+refs" \
+    | grep -E -o '\"/go/\+/refs/tags/go.+?\"' \
+    | grep -E -o "$pattern" \
     | tr -d 'go' \
-    | sort -u -k 1,1n -k 2,2n -k 3,3n -t .
+    | sort -k 1,1n -k 2,2n -k 3,3n -t . \
+    | uniq
 }
 
 
@@ -701,6 +712,7 @@ else
       -y|--non-interactive) NON_INTERACTIVE=true;;
       -o|--os) shift; OS=$1;;
       -a|--arch) shift; ARCH=$1;;
+      -u|--unstable) INCLUDE_UNSTABLE=true;;
       --) __cmd_args+=("$@"); break;;
       *) __cmd_args+=("$1");;
     esac

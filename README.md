@@ -156,6 +156,7 @@ curl -sSL https://git.io/g-install | bash
     -y, --non-interactive   Prevent prompts
     -o, --os                Override operating system
     -a, --arch              Override system architecture
+    -u, --unstable          Include unstable versions in list
 ```
 
 ## Uninstall
@@ -216,7 +217,7 @@ At this point you would have removed `g` and `go` entirely.
     - [x] Add non-interactive mode
     - [x] Warn about installing in an uncommon path. See #5
 - [x] Upgrade script
-- [ ] Add support to select `unstable` versions
+- [x] Add support to select `unstable` versions
 - [x] Install requested version when `g run` cannot find it. See #3
 - [ ] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
 - [x] Improve the --quiet and --non-interactive modifiers
