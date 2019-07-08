@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Improve the --quiet modifier
 - Normalize messages styles and wording
 - Support double-dash to signal end-of-params
 - Tweak README file

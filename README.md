@@ -219,7 +219,7 @@ At this point you would have removed `g` and `go` entirely.
 - [ ] Add support to select `unstable` versions
 - [x] Install requested version when `g run` cannot find it. See #3
 - [ ] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
-- [ ] Improve the --quiet and --non-interactive modifiers
+- [x] Improve the --quiet and --non-interactive modifiers
 - [ ] Test it on diff platforms
 - [ ] Write some tests
 

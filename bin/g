@@ -129,6 +129,9 @@ style_text() {
 #
 
 info() {
+  if [[ "$QUIET" = true ]]; then
+    return
+  fi
   printf '%22s: %s\n' "$(style_text 94 "$1")" "$(style_text 2 "$2")"
 }
 
