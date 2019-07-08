@@ -1,7 +1,9 @@
-Changelog
-=========
+# Changelog
 
 ## Unreleased
+
+
+## 0.5.0 - 2019-07-08
 
 - Add support for listing and installing unstable versions
 - Prevent bugs in config files without final newline
