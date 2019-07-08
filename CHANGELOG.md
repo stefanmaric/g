@@ -3,7 +3,8 @@ Changelog
 
 ## Unreleased
 
-- Warn about installing on a non-default path, see #5
+- Install requested version when `g run` cannot find it. See #3
+- Warn about installing on a non-default path. See #5
 - Add goenv to the alternatives list on README
 - Add instructions for removal on README
 - Make the detection of previously installed g stricter

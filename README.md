@@ -219,7 +219,7 @@ At this point you would have removed `g` and `go` entirely.
     - [x] Warn about installing in an uncommon path. See #5
 - [x] Upgrade script
 - [ ] Add support to select `unstable` versions
-- [ ] Install requested version when `g run` cannot find it. See #3
+- [x] Install requested version when `g run` cannot find it. See #3
 - [ ] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
 - [ ] Improve the --quiet and --non-interactive modifiers
 - [ ] Test it on diff platforms

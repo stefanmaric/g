@@ -39,6 +39,7 @@ ACTIVATE=true
 QUIET=false
 NO_COLOR=false
 NON_INTERACTIVE=false
+STDIN=
 ARCH=
 OS=
 
@@ -49,6 +50,18 @@ OS=
 if [[ ! -t 1 || ("${TERM:-}" != "xterm"* && "${TERM:-}" != "screen"*) ]]; then
   NO_COLOR=true
 fi
+
+# Determine where to read user input from.
+# Borrowed from:
+# https://github.com/mklement0/n-install/blob/0cf509b3a873baa30cf40ce6b2e1db2e02172de0/bin/n-install#L705
+if [[ -f "${BASH_SOURCE:-}" ]]; then
+  # When running the script as a binary file, use stdin.
+  STDIN="/dev/stdin"
+else
+  # When running in a pipe, as it is usually intended to be, read from the tty.
+  STDIN="/dev/tty"
+fi
+
 
 #
 # Information about the tool.
@@ -522,7 +535,7 @@ install() {
 
   rm -f "$dir/g.lock"
 
-  if $ACTIVATE; then
+  if [[ "$ACTIVATE" = true ]]; then
     activate "$version"
     info installed "$(go version)"
   fi
@@ -597,6 +610,7 @@ run_with_version() {
   fi
 
   local version=$1
+  local response
 
   if [[ "$version" = "latest" ]]; then
     version=$(get_latest_version)
@@ -607,11 +621,21 @@ run_with_version() {
 
   shift # remove version
 
-  if [[ -f "$bin" ]]; then
-    GOROOT=$root exec "$bin" "$@"
-  else
-    abort "$version is not installed"
+  if [[ ! -x "$bin" ]]; then
+    test "$NON_INTERACTIVE" = false && \
+      read -p "$(info "info" "$version is not installed, install it now? [y/N] ")" \
+      -n 1 -r response < "$STDIN" || \
+      response=y
+
+    if [[ "$response" = "y" ]]; then
+      ACTIVATE=false
+      install "$version"
+    else
+      abort "$version is not installed"
+    fi
   fi
+
+  GOROOT=$root exec "$bin" "$@"
 }
 
 self_upgrade() {
@@ -620,8 +644,7 @@ self_upgrade() {
   elif command -v wget > /dev/null; then
     wget -qO- https://git.io/g-install | bash -s -- -y
   else
-    echo "  Error: curl or wget required"
-    exit 1
+    abort "curl or wget required"
   fi
 }
 
