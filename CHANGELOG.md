@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Ensure the modified PATH is exported on bash and zsh
 - Prevent multiple selection of the same shell in g-install
 - Improve the --quiet modifier
 - Normalize messages styles and wording

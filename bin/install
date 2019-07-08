@@ -150,7 +150,7 @@ get_line_for_shell() {
       printf '%s %s %s %s' \
         "export GOPATH=\"${GOPATH/#$HOME/\$HOME}\";" \
         "export GOROOT=\"${GOROOT/#$HOME/\$HOME}\";" \
-        "PATH=\"\$GOPATH/bin:\$PATH\";" \
+        "export PATH=\"\$GOPATH/bin:\$PATH\";" \
         "# $COMMENT_MESSAGE"
     ;;
     fish)
