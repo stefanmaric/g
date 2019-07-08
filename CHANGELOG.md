@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Support double-dash to signal end-of-params
 - Tweak README file
 - Offer to install latest go version after installing g
 - Install requested version when `g run` cannot find it. See #3

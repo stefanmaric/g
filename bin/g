@@ -694,6 +694,7 @@ else
       -y|--non-interactive) NON_INTERACTIVE=true;;
       -o|--os) shift; OS=$1;;
       -a|--arch) shift; ARCH=$1;;
+      --) __cmd_args+=("$@"); break;;
       *) __cmd_args+=("$1");;
     esac
     shift
