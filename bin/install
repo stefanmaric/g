@@ -326,7 +326,9 @@ while test $# -ne 0; do
     -y|--non-interactive) NON_INTERACTIVE=true;;
     *)
       if array_includes "$1" "${INSTALLED_SHELLS[@]}"; then
-        SELECTED_SHELLS+=("$1")
+        if ! array_includes "$1" "${SELECTED_SHELLS[@]}"; then
+          SELECTED_SHELLS+=("$1")
+        fi
       elif array_includes "$1" "${SUPPORTED_SHELLS[@]}"; then
         echo "  ERROR: $1 has been selected but is not installed"
         exit 1

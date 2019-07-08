@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Prevent multiple selection of the same shell in g-install
 - Improve the --quiet modifier
 - Normalize messages styles and wording
 - Support double-dash to signal end-of-params
