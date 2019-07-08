@@ -28,7 +28,7 @@ Existing version managers build go from source, have too many dependencies, poll
 
 ## Requirements
 
-* macOS, Linux or BSD environment - should work just fine on [Bash for Windows (WSL)](https://docs.microsoft.com/en-us/windows/wsl/about).
+* macOS, Linux or BSD environment. [Bash for Windows (WSL)](https://docs.microsoft.com/en-us/windows/wsl/about) is supported as well.
 * Bash 3+, check with `bash --version`
 * Either [`curl`](https://en.wikipedia.org/wiki/CURL) or [`wget`](https://en.wikipedia.org/wiki/Wget), check with `curl -V` or `wget -V` respectively.
 
@@ -184,7 +184,7 @@ rm (command -v g)
 Now, if you want to remove everything, first **be sure to backup** your projects inside `$GOROOT`, if any. Then remove everything inside `$GOROOT` and `$GOPATH`:
 
 ```shell
-rm -rf $GOPATH $GOROOT
+rm -r $GOPATH $GOROOT
 ```
 
 Then open your shell config file with your text editor of choice and look of for a line that includes `g-install` to remove it. These are the locations used by the install script:
