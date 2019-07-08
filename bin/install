@@ -147,14 +147,14 @@ get_dotfile_for_shell() {
 get_line_for_shell() {
   case "$1" in
     bash|zsh)
-      printf '%s %s %s %s' \
+      printf '\n%s %s %s %s' \
         "export GOPATH=\"${GOPATH/#$HOME/\$HOME}\";" \
         "export GOROOT=\"${GOROOT/#$HOME/\$HOME}\";" \
         "export PATH=\"\$GOPATH/bin:\$PATH\";" \
         "# $COMMENT_MESSAGE"
     ;;
     fish)
-      printf '%s %s %s %s' \
+      printf '\n%s %s %s %s' \
         "set -gx GOPATH ${GOPATH/#$HOME/\$HOME};" \
         "set -gx GOROOT ${GOROOT/#$HOME/\$HOME};" \
         "set -gx PATH \$GOPATH/bin \$PATH;" \
