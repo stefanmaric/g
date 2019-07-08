@@ -53,6 +53,18 @@ if command -v g > /dev/null && [[ "$(command -v g)" == "$GOPATH"* ]]; then
 fi
 
 NON_INTERACTIVE=false
+STDIN=
+
+# Determine where to read user input from.
+# Borrowed from:
+# https://github.com/mklement0/n-install/blob/0cf509b3a873baa30cf40ce6b2e1db2e02172de0/bin/n-install#L705
+if [[ -f "${BASH_SOURCE:-}" ]]; then
+  # When running the script as a binary file, use stdin.
+  STDIN="/dev/stdin"
+else
+  # When running in a pipe, as g-install is usually intended to, read from the tty.
+  STDIN="/dev/tty"
+fi
 
 G_DOWNLOAD_URL="https://git.io/g-bin"
 
@@ -187,19 +199,8 @@ configure_selected_shells() {
 #
 
 initiate() {
-  local stdin
-  local response
-
-  # Determine where to read user input from.
-  # Borrowed from:
-  # https://github.com/mklement0/n-install/blob/0cf509b3a873baa30cf40ce6b2e1db2e02172de0/bin/n-install#L705
-  if [[ -f "${BASH_SOURCE:-}" ]]; then
-    # When running the script as a binary file, use stdin.
-    stdin="/dev/stdin"
-  else
-    # When running in a pipe, as it is usually intended to be, read from the tty.
-    stdin="/dev/tty"
-  fi
+  local yes_g
+  local yes_go
 
   if [[ "$IS_UPGRADING" = true ]]; then
     echo "You are about to upgrade g, the gluten-free go version manager at:"
@@ -243,33 +244,48 @@ initiate() {
   fi
 
   test "$NON_INTERACTIVE" = false && \
-    read -p "Do you want to continue? [y/N] " -n 1 -r response < "$stdin" && \
+    read -p "Do you want to continue? [y/N] " \
+    -n 1 -r yes_g < "$STDIN" && \
     echo || \
-    response=y
+    yes_g=y
 
   echo
 
-  if [[ "$response" = "y" ]]; then
-    install_g
-    configure_selected_shells
-    echo
-
-    if [[ "$IS_UPGRADING" = true ]]; then
-      if [[ "$CURRENT_VERSION" = "$(command g --version)" ]]; then
-        echo "g is already up-to-date"
-      else
-        echo "g has been successfully upgraded from ${CURRENT_VERSION} to $(command g --version)"
-      fi
-    else
-      echo "g has been successfully installed"
-      echo "NOTE: to start using g, make sure to restart this shell session"
-      echo "For more information, see: https://github.com/stefanmaric/g"
-    fi
-
-    echo
-  else
+  if [[ "$yes_g" != "y" ]]; then
     echo "Aborted"
     exit 1
+  fi
+
+  install_g
+  configure_selected_shells
+  echo
+
+  if [[ "$IS_UPGRADING" = true ]]; then
+    if [[ "$CURRENT_VERSION" = "$(command g --version)" ]]; then
+      echo "g is already up-to-date"
+    else
+      echo "g has been successfully upgraded from ${CURRENT_VERSION} to $(command g --version)"
+    fi
+  else
+    echo "g has been successfully installed"
+    echo "NOTE: restart your shell sessions before using g or go"
+    echo "For more information, see: https://github.com/stefanmaric/g"
+    echo
+
+    test "$NON_INTERACTIVE" = false && \
+      read -p "Do you want to install the latest go version? [y/N] " \
+      -n 1 -r yes_go < "$STDIN" && \
+      echo || \
+      yes_go=y
+
+    echo
+
+    if [[ "$yes_go" = "y" ]]; then
+      export GOROOT
+      export GOPATH
+      export PATH="$GOPATH/bin:$PATH"
+      exec "$GOPATH/bin/g" install latest
+    fi
   fi
 }
 

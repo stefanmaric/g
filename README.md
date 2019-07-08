@@ -53,11 +53,9 @@ wget -qO- https://git.io/g-install | bash
 
 That will download the [`g` script](./bin/g), put it inside `$GOPATH/bin/`, give it execution rights with `chmod`, and configure your default shell's initialization file, setting the `GOPATH` & `GOROOT` environment variables and adding `$GOPATH/bin` to the `PATH`.
 
-**NOTE**: You must restart your current shell session for it to read these new env vars in order to use `g`. Alternatively, you can source your shell's init file, usually with the `source` command, but that will depend on the specific shell you use. For example, if you use `zsh`:
+Then you will prompted to install the latest version of go; you can skip this step and install your preferred version with `g` later.
 
-```shell
-source ~/.zshrc
-```
+**NOTE**: You must restart your current shell session for it to read these new env vars in order to use `g` or `go`.
 
 ### Shell support
 

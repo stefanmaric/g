@@ -3,6 +3,7 @@ Changelog
 
 ## Unreleased
 
+- Offer to install latest go version after installing g
 - Install requested version when `g run` cannot find it. See #3
 - Warn about installing on a non-default path. See #5
 - Add goenv to the alternatives list on README

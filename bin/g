@@ -55,13 +55,12 @@ fi
 # Borrowed from:
 # https://github.com/mklement0/n-install/blob/0cf509b3a873baa30cf40ce6b2e1db2e02172de0/bin/n-install#L705
 if [[ -f "${BASH_SOURCE:-}" ]]; then
-  # When running the script as a binary file, use stdin.
+  # When running the script as a binary file, as g is usually intended to, use stdin.
   STDIN="/dev/stdin"
 else
-  # When running in a pipe, as it is usually intended to be, read from the tty.
+  # When running in a pipe, read from the tty.
   STDIN="/dev/tty"
 fi
-
 
 #
 # Information about the tool.
