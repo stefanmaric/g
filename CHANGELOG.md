@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Make g POSIX compatible and use `sh` instead of `bash`
 
 ## 0.5.0 - 2019-07-08
 
