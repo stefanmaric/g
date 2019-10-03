@@ -108,6 +108,7 @@ EOF
 # POSIX utils.
 #
 
+# Extracted from: https://unix.stackexchange.com/a/464963
 readc() { # arg: <variable-name>
   if [ -t 0 ]; then
     # if stdin is a tty device, put it out of icanon, set min and
@@ -277,22 +278,22 @@ download() {
     params="--location"
 
     if [ "$QUIET" = true ]; then
-      params="${params} --silent"
+      params="$params --silent"
     else
-      params="${params} --progress-bar"
+      params="$params --progress-bar"
     fi
 
     # shellcheck disable=SC2086
-    curl ${params} "$@"
+    curl $params "$@"
   elif command -v wget > /dev/null; then
     params="--quiet -O-"
 
     if [ ! "$QUIET" = true ]; then
-      params="${params} --show-progress"
+      params="$params --show-progress"
     fi
 
     # shellcheck disable=SC2086
-    wget ${params} "$@"
+    wget $params "$@"
   else
     abort "curl or wget required"
   fi
@@ -507,8 +508,8 @@ open_interactive_ui() {
         exit
       ;;
       *)
+        # If the user hit the ENTER key, the variable includes a new line.
         if [ "$(echo "$key" | wc -l)" -gt 1 ]; then
-          # If the user hit the ENTER key, the variable includes a new line.
           activate "$selected"
           leave_fullscreen
           go version
@@ -537,7 +538,7 @@ activate() {
 
       ln -sf "$GOROOT/bin/"* "$GOPATH/bin/"
     else
-      abort "version ${version} installation might be corrupted"
+      abort "version $version installation might be corrupted"
     fi
   fi
 }
@@ -756,8 +757,8 @@ else
       -o|--os) shift; OS=$1;;
       -a|--arch) shift; ARCH=$1;;
       -u|--unstable) INCLUDE_UNSTABLE=true;;
-      --) __cmd_args="${__cmd_args} $*"; break;;
-      *) __cmd_args="${__cmd_args} $1";;
+      --) __cmd_args="$__cmd_args $*"; break;;
+      *) __cmd_args="$__cmd_args $1";;
     esac
     shift
   done
@@ -765,11 +766,11 @@ else
   # The unquoted expansions here are intentional.
   # shellcheck disable=SC2086
   case $__cmd in
-    install) install ${__cmd_args};;
-    run) run_with_version ${__cmd_args};;
-    remove) remove_versions ${__cmd_args};;
+    install) install $__cmd_args;;
+    run) run_with_version $__cmd_args;;
+    remove) remove_versions $__cmd_args;;
     prune) prune_versions;;
-    which) display_bin_path_for_version ${__cmd_args};;
+    which) display_bin_path_for_version $__cmd_args;;
     list) display_installed_with_selected "$(get_current_version)";;
     list-all) display_remote_versions;;
     self-upgrade) self_upgrade;;
