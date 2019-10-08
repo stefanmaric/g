@@ -4,6 +4,7 @@
 
 - Make g POSIX compatible and use `sh` instead of `bash`
 - Cleanup and normalize `g` code
+- Make g-install POSIX compatible as well
 
 ## 0.5.0 - 2019-07-08
 

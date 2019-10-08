@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # MIT License
 #
@@ -22,49 +22,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
+# POSIX shell doesn't support errtrace nor pipefail.
+
 # Exit on error. Append "|| true" if you expect an error.
 set -o errexit
-# Exit on error inside any functions or subshells.
-set -o errtrace
-# Catch errors in pipes.
-set -o pipefail
 # Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR.
 set -o nounset
 
 GOPATH=${GOPATH:-$HOME/go}
 GOROOT=${GOROOT:-$HOME/.go}
 
-if [[ "$GOPATH" != "/"* ]]; then
-  echo "  ERROR: \$GOPATH must be an absolute path but it is set to ${GOPATH}"
+if [ "$(echo "$GOPATH" | cut -c1)" != "/" ]; then
+  echo "  ERROR: \$GOPATH must be an absolute path but it is set to $GOPATH"
   exit 1
 fi
 
-if [[ "$GOROOT" != "/"* ]]; then
-  echo "  ERROR: \$GOROOT must be an absolute path but it is set to ${GOROOT}"
+if [ "$(echo "$GOROOT" | cut -c1)" != "/" ]; then
+  echo "  ERROR: \$GOROOT must be an absolute path but it is set to $GOROOT"
   exit 1
 fi
 
 IS_UPGRADING=false
 CURRENT_VERSION=
 
-if command -v g > /dev/null && [[ "$(command -v g)" == "$GOPATH"* ]]; then
-  IS_UPGRADING=true
-  CURRENT_VERSION=$(command g --version)
+if command -v g > /dev/null; then
+  case "$(command -v g)" in
+    "$GOPATH"*)
+      IS_UPGRADING=true
+      CURRENT_VERSION=$(command g --version)
+    ;;
+  esac
 fi
 
 NON_INTERACTIVE=false
-STDIN=
-
-# Determine where to read user input from.
-# Borrowed from:
-# https://github.com/mklement0/n-install/blob/0cf509b3a873baa30cf40ce6b2e1db2e02172de0/bin/n-install#L705
-if [[ -f "${BASH_SOURCE:-}" ]]; then
-  # When running the script as a binary file, use stdin.
-  STDIN="/dev/stdin"
-else
-  # When running in a pipe, as g-install is usually intended to, read from the tty.
-  STDIN="/dev/tty"
-fi
 
 G_DOWNLOAD_URL="https://git.io/g-bin"
 
@@ -72,30 +63,63 @@ COMMENT_MESSAGE="g-install: do NOT edit, see https://github.com/stefanmaric/g"
 
 USER_SHELL=$(basename "$SHELL")
 
-SUPPORTED_SHELLS=(
-  bash
-  zsh
-  fish
-)
-
-INSTALLED_SHELLS=()
-
-SELECTED_SHELLS=()
+SUPPORTED_SHELLS="bash zsh fish"
+INSTALLED_SHELLS=""
+SELECTED_SHELLS=""
 
 #
-# Check if the given <string> is present in the given <array>.
+# POSIX utils.
 #
 
-array_includes() {
+# Extracted from: https://unix.stackexchange.com/a/464963
+readc() { # arg: <variable-name>
+  if [ -t 0 ]; then
+    # if stdin is a tty device, put it out of icanon, set min and
+    # time to sane value, but don't otherwise touch other input or
+    # or local settings (echo, isig, icrnl...). Take a backup of the
+    # previous settings beforehand.
+    saved_tty_settings=$(stty -g)
+    stty -icanon min 1 time 0
+  fi
+  eval "$1="
+  while
+    # read one byte, using a work around for the fact that command
+    # substitution strips the last character.
+    c=$(dd bs=1 count=1 2> /dev/null; echo .)
+    c=${c%.}
+
+    # break out of the loop on empty input (eof) or if a full character
+    # has been accumulated in the output variable (using "wc -m" to count
+    # the number of characters).
+    [ -n "$c" ] &&
+      eval "$1=\${$1}"'$c
+        [ "$(($(printf %s "${'"$1"'}" | wc -m)))" -eq 0 ]'; do
+    continue
+  done
+  if [ -t 0 ]; then
+    # restore settings saved earlier if stdin is a tty device.
+    stty "$saved_tty_settings"
+  fi
+}
+
+pretty_print_path() {
+  printf '%s' "$1" | sed "s|${HOME}|\$HOME|g"
+}
+
+#
+# Check if the given <string> is present in the given <list>.
+#
+
+list_includes() {
   # First argument is search element.
-  local search_element=$1
+  search_element=$1
   # The rest is the array to lookup.
   shift
 
-  local found=1
+  found=1
 
-  for item in "${@}"; do
-    if [[ "$item" = "$search_element" ]]; then
+  for item in "$@"; do
+    if [ "$item" = "$search_element" ]; then
       found=0
       break
     fi
@@ -110,13 +134,15 @@ array_includes() {
 
 download() {
   if command -v curl > /dev/null; then
-    local params=(--location --silent --show-error)
+    params="--location --silent --show-error"
 
-    curl "${params[@]}" "$@"
+    # shellcheck disable=SC2086
+    curl $params "$@"
   elif command -v wget > /dev/null; then
-    local params=(--quiet -O-)
+    params="--quiet -O-"
 
-    wget "${params[@]}" "$@"
+    # shellcheck disable=SC2086
+    wget $params "$@"
   else
     echo "  ERROR: curl or wget required"
     exit 1
@@ -148,15 +174,15 @@ get_line_for_shell() {
   case "$1" in
     bash|zsh)
       printf '\n%s %s %s %s' \
-        "export GOPATH=\"${GOPATH/#$HOME/\$HOME}\";" \
-        "export GOROOT=\"${GOROOT/#$HOME/\$HOME}\";" \
+        "export GOPATH=\"$(pretty_print_path "$GOPATH")\";" \
+        "export GOROOT=\"$(pretty_print_path "$GOROOT")\";" \
         "export PATH=\"\$GOPATH/bin:\$PATH\";" \
         "# $COMMENT_MESSAGE"
     ;;
     fish)
       printf '\n%s %s %s %s' \
-        "set -gx GOPATH ${GOPATH/#$HOME/\$HOME};" \
-        "set -gx GOROOT ${GOROOT/#$HOME/\$HOME};" \
+        "set -gx GOPATH $(pretty_print_path "$GOPATH");" \
+        "set -gx GOROOT $(pretty_print_path "$GOROOT");" \
         "set -gx PATH \$GOPATH/bin \$PATH;" \
         "# $COMMENT_MESSAGE"
     ;;
@@ -181,9 +207,9 @@ install_g() {
 #
 
 configure_selected_shells() {
-  for shell in "${SELECTED_SHELLS[@]}"; do
-    local dotfile_path=$(get_dotfile_for_shell "$shell")
-    local config_line=$(get_line_for_shell "$shell")
+  for shell in $SELECTED_SHELLS; do
+    dotfile_path=$(get_dotfile_for_shell "$shell")
+    config_line=$(get_line_for_shell "$shell")
 
     if test -f "$dotfile_path" && grep --quiet "g-install" "$dotfile_path"; then
       echo "  info: skipping $shell because g has been configured already in $dotfile_path"
@@ -199,10 +225,10 @@ configure_selected_shells() {
 #
 
 initiate() {
-  local yes_g
-  local yes_go
+  yes_g=
+  yes_go=
 
-  if [[ "$IS_UPGRADING" = true ]]; then
+  if [ "$IS_UPGRADING" = true ]; then
     echo "You are about to upgrade g, the gluten-free go version manager at:"
   else
     echo "You are about to install g, the gluten-free go version manager at:"
@@ -212,12 +238,12 @@ initiate() {
   echo "  $GOPATH/bin/g"
   echo
 
-  if [[ "${#SELECTED_SHELLS[@]}" -eq 0 ]]; then
+  if [ "${#SELECTED_SHELLS}" -eq 0 ]; then
     echo "  ERROR: no shell has been selected for installation"
     exit 1
   fi
 
-  if [[ "$IS_UPGRADING" = false ]]; then
+  if [ "$IS_UPGRADING" = false ]; then
     echo "The following environment variables:"
     echo
     printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
@@ -226,45 +252,45 @@ initiate() {
     echo
     echo "  are going to be set in:"
     echo
-    for shell in "${SELECTED_SHELLS[@]}"; do
+    for shell in $SELECTED_SHELLS; do
       printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
     done
     echo
 
-    if [[ "$GOPATH" != "$HOME/go" ]]; then
-      echo "  warning: using a non-default \$GOPATH: ${GOPATH/#$HOME/\$HOME}"
+    if [ "$GOPATH" != "$HOME/go" ]; then
+      echo "  warning: using a non-default \$GOPATH: $(pretty_print_path "$GOPATH")"
     fi
-    if [[ "$GOROOT" != "$HOME/.go" ]]; then
-      echo "  warning: using a non-default \$GOROOT: ${GOROOT/#$HOME/\$HOME}"
+    if [ "$GOROOT" != "$HOME/.go" ]; then
+      echo "  warning: using a non-default \$GOROOT: $(pretty_print_path "$GOROOT")"
     fi
-    if [[ "$GOPATH" != "$HOME/go" ]] || [[ "$GOROOT" != "$HOME/.go" ]]; then
+    if [ "$GOPATH" != "$HOME/go" ] || [ "$GOROOT" != "$HOME/.go" ]; then
       echo "    This usually presents no problem, but be sure it is intended."
       echo
     fi
   fi
 
-  test "$NON_INTERACTIVE" = false && \
-    read -p "Do you want to continue? [y/N] " \
-    -n 1 -r yes_g < "$STDIN" && \
-    echo || \
-    yes_g=y
+  if [ "$NON_INTERACTIVE" = false ]; then
+    printf "Do you want to continue? [y/N] "
+    readc yes_g
+
+    if [ "$yes_g" != "y" ]; then
+      echo "Aborted"
+      exit 1
+    fi
+  fi
 
   echo
-
-  if [[ "$yes_g" != "y" ]]; then
-    echo "Aborted"
-    exit 1
-  fi
 
   install_g
   configure_selected_shells
+
   echo
 
-  if [[ "$IS_UPGRADING" = true ]]; then
-    if [[ "$CURRENT_VERSION" = "$(command g --version)" ]]; then
+  if [ "$IS_UPGRADING" = true ]; then
+    if [ "$CURRENT_VERSION" = "$(command g --version)" ]; then
       echo "g is already up-to-date"
     else
-      echo "g has been successfully upgraded from ${CURRENT_VERSION} to $(command g --version)"
+      echo "g has been successfully upgraded from $CURRENT_VERSION to $(command g --version)"
     fi
   else
     echo "g has been successfully installed"
@@ -272,20 +298,21 @@ initiate() {
     echo "For more information, see: https://github.com/stefanmaric/g"
     echo
 
-    test "$NON_INTERACTIVE" = false && \
-      read -p "Do you want to install the latest go version? [y/N] " \
-      -n 1 -r yes_go < "$STDIN" && \
-      echo || \
-      yes_go=y
+    if [ "$NON_INTERACTIVE" = false ]; then
+      printf "Do you want to install the latest go version? [y/N] "
+      readc yes_go
+
+      if [ "$yes_go" != "y" ]; then
+        exit 0
+      fi
+    fi
 
     echo
 
-    if [[ "$yes_go" = "y" ]]; then
-      export GOROOT
-      export GOPATH
-      export PATH="$GOPATH/bin:$PATH"
-      exec "$GOPATH/bin/g" install latest
-    fi
+    export GOROOT
+    export GOPATH
+    export PATH="$GOPATH/bin:$PATH"
+    exec "$GOPATH/bin/g" install latest
   fi
 }
 
@@ -294,24 +321,29 @@ initiate() {
 #
 
 while IFS= read -r shell_path; do
+  if [ "$(echo "$shell_path" | cut -c1)" != "/" ]; then
+    continue
+  fi
+
   shell_name=$(basename "$shell_path")
 
   # Collect only supported shells.
-  if array_includes "$shell_name" "${SUPPORTED_SHELLS[@]}"; then
-    INSTALLED_SHELLS+=("$shell_name")
+  # shellcheck disable=SC2086
+  if list_includes "$shell_name" $SUPPORTED_SHELLS; then
+    INSTALLED_SHELLS="$INSTALLED_SHELLS $shell_name"
 
     # Select user's shell for configuration by default.
-    if [[ "$shell_name" = "$USER_SHELL" ]]; then
-      SELECTED_SHELLS+=("$shell_name")
+    if [ "$shell_name" = "$USER_SHELL" ]; then
+      SELECTED_SHELLS="$SELECTED_SHELLS $shell_name"
     fi
   fi
 # This file lists abs paths for installed shells. This at-bottom syntax is to
 # prevent subshells and allow for the loop code to modify global variables.
 # See: https://stackoverflow.com/questions/16854280/
-done < <(grep '^/' /etc/shells)
+done < /etc/shells
 
 # This script is useless if it doesn't support any of user's installed shells.
-if [[ "${#INSTALLED_SHELLS[@]}" -eq 0 ]]; then
+if [ "${#INSTALLED_SHELLS}" -eq 0 ]; then
   echo "  ERROR: none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
   exit 1
 fi
@@ -322,14 +354,16 @@ fi
 #
 
 while test $# -ne 0; do
-  case $1 in
+  case "$1" in
     -y|--non-interactive) NON_INTERACTIVE=true;;
     *)
-      if array_includes "$1" "${INSTALLED_SHELLS[@]}"; then
-        if ! array_includes "$1" "${SELECTED_SHELLS[@]}"; then
-          SELECTED_SHELLS+=("$1")
+      # shellcheck disable=SC2086
+      if list_includes "$1" $INSTALLED_SHELLS; then
+        # shellcheck disable=SC2086
+        if ! list_includes "$1" $SELECTED_SHELLS; then
+          SELECTED_SHELLS="$SELECTED_SHELLS $1"
         fi
-      elif array_includes "$1" "${SUPPORTED_SHELLS[@]}"; then
+      elif list_includes "$1" $SUPPORTED_SHELLS; then
         echo "  ERROR: $1 has been selected but is not installed"
         exit 1
       else
