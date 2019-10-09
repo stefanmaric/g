@@ -7,6 +7,7 @@
 - Make g-install POSIX compatible as well
 - Fix g-install breaking on envs without $SHELL
 - Fix g breaking when using non-GNU `wget`
+- Add handling of misconfigured $GOPATH/bin
 
 ## 0.5.0 - 2019-07-08
 

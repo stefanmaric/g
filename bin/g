@@ -721,6 +721,22 @@ if [ -z "${GOPATH:-}" ] || [ -z "${GOROOT:-}" ]; then
   exit 1
 fi
 
+BIN_DIR="$GOPATH/bin"
+
+if [ "${PATH##*$BIN_DIR*}" == "$PATH" ]; then
+  error "\$GOPATH/bin not found in \$PATH and it is required."
+  display_help
+  exit 1
+fi
+
+#
+# Create bin dir inside GOPATH if it doesn't exists yet
+#
+
+if [ ! -d "$BIN_DIR" ]; then
+  mkdir -p "$BIN_DIR"
+fi
+
 #
 # create versions dir if it doesn't exist yet.
 #
