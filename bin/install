@@ -61,7 +61,11 @@ G_DOWNLOAD_URL="https://git.io/g-bin"
 
 COMMENT_MESSAGE="g-install: do NOT edit, see https://github.com/stefanmaric/g"
 
-USER_SHELL=$(basename "$SHELL")
+USER_SHELL=
+
+if [ -n "${SHELL:-}" ]; then
+  USER_SHELL=$(basename "$SHELL")
+fi
 
 SUPPORTED_SHELLS="bash zsh fish"
 INSTALLED_SHELLS=""
