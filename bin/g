@@ -289,7 +289,9 @@ download() {
     params="--quiet -O-"
 
     if [ ! "$QUIET" = true ]; then
-      params="$params --show-progress"
+      if command wget --help 2>&1 | grep -e '--show-progress' > /dev/null; then
+        params="$params --show-progress"
+      fi
     fi
 
     # shellcheck disable=SC2086

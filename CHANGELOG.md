@@ -6,6 +6,7 @@
 - Cleanup and normalize `g` code
 - Make g-install POSIX compatible as well
 - Fix g-install breaking on envs without $SHELL
+- Fix g breaking when using non-GNU `wget`
 
 ## 0.5.0 - 2019-07-08
 
