@@ -34,17 +34,36 @@ set -o nounset
 # set -o xtrace
 # set -o verbose
 
+#
+# Exit with the given error <msg ...>.
+#
+
+error_and_abort() {
+  printf '\n  %s: %s\n\n' "ERROR" "$*" >&2
+  exit 1
+}
+
+#
+# Log formated info as <type>: <msg>.
+#
+
+log_info() {
+  printf '%14s: %s\n' "$1" "$2"
+}
+
+#
+# Pre-check environment variables.
+#
+
 GOPATH=${GOPATH:-$HOME/go}
 GOROOT=${GOROOT:-$HOME/.go}
 
 if [ "$(echo "$GOPATH" | cut -c1)" != "/" ]; then
-  echo "  ERROR: \$GOPATH must be an absolute path but it is set to $GOPATH"
-  exit 1
+  error_and_abort "\$GOPATH must be an absolute path but it is set to $GOPATH"
 fi
 
 if [ "$(echo "$GOROOT" | cut -c1)" != "/" ]; then
-  echo "  ERROR: \$GOROOT must be an absolute path but it is set to $GOROOT"
-  exit 1
+  error_and_abort "\$GOROOT must be an absolute path but it is set to $GOROOT"
 fi
 
 IS_UPGRADING=false
@@ -165,8 +184,7 @@ download() {
     # shellcheck disable=SC2086
     wget $params "$@"
   else
-    echo "  ERROR: curl or wget required"
-    exit 1
+    error_and_abort "curl or wget required"
   fi
 }
 
@@ -189,8 +207,7 @@ get_dotfile_for_shell() {
     tcsh) echo "$HOME/.tcshrc";;
     ash|dash)
       if [ -z "${ENV:-}" ] || [ ! -f "$ENV" ]; then
-        echo "  ERROR: for ash and dash, the \$ENV var must be properly configured" >&2
-        exit 1
+        error_and_abort "for ash and dash, the \$ENV var must be properly configured"
       else
         echo "$ENV"
       fi
@@ -226,11 +243,11 @@ get_line_for_shell() {
 #
 
 install_g() {
-  echo "  info: creating dir $GOPATH/bin"
+  log_info "info" "creating dir $GOPATH/bin"
   mkdir -p "$GOPATH/bin"
-  echo "  info: copying g in $GOPATH/bin/g"
+  log_info "info" "copying g in $GOPATH/bin/g"
   download "$G_DOWNLOAD_URL" > "$GOPATH/bin/g"
-  echo "  info: setting permissions"
+  log_info "info" "setting permissions"
   chmod +x "$GOPATH/bin/g"
 }
 
@@ -246,9 +263,9 @@ configure_selected_shells() {
     config_line=$(get_line_for_shell "$shell")
 
     if test -f "$dotfile_path" && grep "g-install" "$dotfile_path" > /dev/null; then
-      echo "  info: skipping $shell because g has been configured already in $dotfile_path"
+      log_info "info" "skipping $shell because g has been configured already in $dotfile_path"
     else
-      echo "  info: configuring $shell in $dotfile_path"
+      log_info "info" "configuring $shell in $dotfile_path"
       echo "$config_line" >> "$dotfile_path"
     fi
   done
@@ -262,6 +279,8 @@ initiate() {
   yes_g=
   yes_go=
 
+  echo
+
   if [ "$IS_UPGRADING" = true ]; then
     echo "You are about to upgrade g, the gluten-free go version manager at:"
   else
@@ -273,23 +292,22 @@ initiate() {
   echo
 
   if [ "${#SELECTED_SHELLS}" -eq 0 ]; then
-    echo "  ERROR: no shell has been selected for installation"
-    exit 1
+    error_and_abort "no shell has been selected for installation"
   fi
 
   if [ "$IS_UPGRADING" = false ]; then
     echo "The following environment variables:"
     echo
-    printf '%10s : %s \n' "\$GOROOT" "$GOROOT"
-    printf '%10s : %s \n' "\$GOPATH" "$GOPATH"
-    printf '%10s : %s \n' "\$PATH" "$GOPATH/bin"
+    log_info "\$GOROOT" "$GOROOT"
+    log_info "\$GOPATH" "$GOPATH"
+    log_info "\$PATH" "$GOPATH/bin"
     echo
     echo "  are going to be set in:"
     echo
     for shell in $SELECTED_SHELLS; do
       # First check the dotfile is actually known, then use it.
       get_dotfile_for_shell "$shell" > /dev/null
-      printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
+      log_info "$shell" "$(get_dotfile_for_shell "$shell")"
     done
     echo
 
@@ -309,8 +327,9 @@ initiate() {
     printf "Do you want to continue? [y/N] "
     read_user_input yes_g
 
+    echo
+
     if [ "$yes_g" != "y" ]; then
-      echo
       echo "Aborted"
       exit 1
     fi
@@ -383,8 +402,7 @@ done < /etc/shells
 
 # This script is useless if it doesn't support any of user's installed shells.
 if [ "${#INSTALLED_SHELLS}" -eq 0 ]; then
-  echo "  ERROR: none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
-  exit 1
+  error_and_abort "none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
 fi
 
 
@@ -403,11 +421,9 @@ while test $# -ne 0; do
           SELECTED_SHELLS="$SELECTED_SHELLS $1"
         fi
       elif list_includes "$1" $SUPPORTED_SHELLS; then
-        echo "  ERROR: $1 has been selected but is not installed"
-        exit 1
+        error_and_abort "$1 has been selected but is not installed"
       else
-        echo "  ERROR: unknown argument or shell \"$1\""
-        exit 1
+        error_and_abort "unknown argument or shell \"$1\""
       fi
     ;;
   esac

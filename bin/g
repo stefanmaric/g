@@ -108,35 +108,48 @@ EOF
 # POSIX utils.
 #
 
+# Read one char at the time up-to some limit: <var_name> [<read_limit> = 1]
 # Extracted from: https://unix.stackexchange.com/a/464963
-readc() { # arg: <variable-name>
-  if [ -t 0 ]; then
-    # if stdin is a tty device, put it out of icanon, set min and
-    # time to sane value, but don't otherwise touch other input or
-    # or local settings (echo, isig, icrnl...). Take a backup of the
-    # previous settings beforehand.
-    saved_tty_settings=$(stty -g)
-    stty -icanon min 1 time 0
+read_user_input() {
+  input_device=
+  var_name=$1
+  read_limit=${2:-1}
+
+  # Determine where to read user input from.
+  if [ -f "${0:-}" ]; then
+    # When running the script as a binary file, use stdin.
+    input_device="/dev/stdin"
+  else
+    # When running in a pipe, read from the tty.
+    input_device="/dev/tty"
   fi
-  eval "$1="
+
+  # Take a backup of the previous settings beforehand.
+  saved_tty_settings=$(stty -F "$input_device" -g)
+  # Ensure the device is out of icanon, set min and time to sane value, but
+  # don't otherwise touch other input or local settings (echo, isig, icrnl...).
+  stty -F "$input_device" -icanon min 1 time 0
+
+  # Reset target variable in case it was in use before.
+  eval "$var_name="
+
   while
-    # read one byte, using a work around for the fact that command
-    # substitution strips the last character.
-    c=$(dd bs=1 count=1 2> /dev/null; echo .)
+    # Read one byte, using a work around for the fact that command substitution
+    # strips the last character.
+    c=$(dd if=$input_device bs=1 count=1 2> /dev/null; echo .)
     c=${c%.}
 
-    # break out of the loop on empty input (eof) or if a full character
-    # has been accumulated in the output variable (using "wc -m" to count
-    # the number of characters).
-    [ -n "$c" ] &&
-      eval "$1=\${$1}"'$c
-        [ "$(($(printf %s "${'"$1"'}" | wc -m)))" -eq 0 ]'; do
+    # Break out of the loop on empty input (EOF) or if a full character has been
+    # accumulated in the output variable (using "wc -m" to count the number of
+    # characters).
+    test -n "$c" && \
+      eval "$var_name=\"\${${var_name}}\$c\";
+        [ \"\$(printf '%s' \"\$$var_name\" | wc -m)\" -lt $read_limit ]"; do
     continue
   done
-  if [ -t 0 ]; then
-    # restore settings saved earlier if stdin is a tty device.
-    stty "$saved_tty_settings"
-  fi
+
+  # Restore settings saved earlier.
+  stty -F "$input_device" "$saved_tty_settings"
 }
 
 #
@@ -158,54 +171,64 @@ style_text() {
 }
 
 #
-# Log formated info as <type> : <msg>.
+# Log formated info as <type>: <msg>.
 #
 
-info() {
+log_info() {
   if [ "$QUIET" = true ]; then
     return
   fi
-  printf '%22s: %s\n' "$(style_text 94 "$1")" "$(style_text 2 "$2")"
+
+  # Escape sequences for styling count into the padding for printf.
+  if [ "$NO_COLOR" = true ]; then
+    printf '%14s: %s\n' "$1" "$2"
+  else
+    printf '%23s: %s\n' "$(style_text 94 "$1")" "$(style_text 2 "$2")"
+  fi
 }
 
 #
 # Log the given error <msg ...>.
 #
 
-error() {
-  printf '%22s: %s\n' "$(style_text 31 ERROR)" "$(style_text 31 "$*")"
+log_error() {
+  printf '  %s: %s\n' "$(style_text 31 ERROR)" "$(style_text 31 "$*")" >&2
 }
 
 #
 # Exit with the given error <msg ...>.
 #
 
-abort() {
+error_and_abort() {
   echo
-  error "$*"
+  log_error  "$*"
+  exit 1
+}
+
+#
+# Log the error <msg ...>, show help, and exit.
+#
+
+error_help_abort() {
+  echo
+  log_error  "$*"
+  echo "$(display_help)" >&2
   echo
   exit 1
 }
 
 #
-# Move up a line and erase.
+# Escape sequences for interactive UI.
 #
 
 erase_line() {
+  # Move up a line and erase.
   printf '\033[1A\033[2K'
 }
-
-#
-# Hide cursor.
-#
 
 hide_cursor() {
   printf '\033[?25l'
 }
-
-#
-# Show cursor.
-#
 
 show_cursor() {
   printf '\033[?25h'
@@ -252,7 +275,7 @@ is_url_ok() {
   elif command -v wget > /dev/null; then
     cmd="wget --quiet --server-response --spider"
   else
-    abort "curl or wget required"
+    error_and_abort "curl or wget required"
   fi
 
   # wget is a bit awkward and using the --server-response option prints the info
@@ -297,7 +320,7 @@ download() {
     # shellcheck disable=SC2086
     wget $params "$@"
   else
-    abort "curl or wget required"
+    error_and_abort "curl or wget required"
   fi
 }
 
@@ -450,7 +473,7 @@ display_remote_versions() {
 
 open_interactive_ui() {
   if [ "$NON_INTERACTIVE" = true ]; then
-    abort "cannot run interactive UI in non-interactive shell"
+    error_and_abort "cannot run interactive UI in non-interactive shell"
   fi
 
   enter_fullscreen
@@ -473,13 +496,13 @@ open_interactive_ui() {
   tmp=
 
   while true; do
-    readc key
+    read_user_input key
     case "$key" in
       "$ESCAPE_SEQ")
         # Handle ESC sequences followed by other characters, i.e. arrow keys.
-        readc tmp
+        read_user_input tmp
         if  [ "$tmp" = "[" ]; then
-          readc arrow
+          read_user_input arrow
           case $arrow in
             "$UP")
               clear
@@ -540,7 +563,7 @@ activate() {
 
       ln -sf "$GOROOT/bin/"* "$GOPATH/bin/"
     else
-      abort "version $version installation might be corrupted"
+      error_and_abort "version $version installation might be corrupted"
     fi
   fi
 }
@@ -566,25 +589,25 @@ install() {
   fi
 
   echo
-  info "installing" "$version"
+  log_info "installing" "$version"
 
   url=$(get_tarball_url "$version")
 
   if ! is_url_ok "$url"; then
-    abort "invalid version $version"
+    error_and_abort "invalid version $version"
   fi
 
-  info "location" "$dir"
+  log_info "location" "$dir"
 
   if mkdir -p "$dir"; then
     touch "$dir/g.lock"
   else
-    abort "cannot create $dir"
+    error_and_abort "cannot create $dir"
   fi
 
-  cd "$dir" || abort "cannot cd into $dir"
+  cd "$dir" || error_and_abort "cannot cd into $dir"
 
-  info "downloading" "$url"
+  log_info "downloading" "$url"
 
   download "$url" | tar -zx --strip-components=1
 
@@ -594,7 +617,7 @@ install() {
 
   if [ "$ACTIVATE" = true ]; then
     activate "$version"
-    info "installed" "$(go version)"
+    log_info "installed" "$(go version)"
   fi
   echo
 }
@@ -605,15 +628,15 @@ install() {
 
 remove_versions() {
   if [ -z "$1" ]; then
-    abort "version(s) required"
+    error_and_abort "version(s) required"
   fi
 
   active=$(get_current_version)
 
   while test $# -ne 0; do
     version=$1
-    [ "$version" = "$active" ] && abort "cannot remove currently active version ($active)"
-    info "remove" "$version"
+    [ "$version" = "$active" ] && error_and_abort "cannot remove currently active version ($active)"
+    log_info "remove" "$version"
     rm -rf "${GO_VERSIONS_DIR:?}/$version"
     shift
   done
@@ -639,7 +662,7 @@ prune_versions() {
 
 display_bin_path_for_version() {
   if [ -z "$1" ]; then
-    abort "version required"
+    error_and_abort "version required"
   fi
 
   version=$1
@@ -653,7 +676,7 @@ display_bin_path_for_version() {
   if [ -f "$bin" ]; then
     echo "$bin"
   else
-    abort "$version is not installed"
+    error_and_abort "$version is not installed"
   fi
 }
 
@@ -663,7 +686,7 @@ display_bin_path_for_version() {
 
 run_with_version() {
   if [ -z "$1" ]; then
-    abort "version required"
+    error_and_abort "version required"
   fi
 
   version=$1
@@ -686,14 +709,14 @@ run_with_version() {
       install "$version"
     else
       # Wrap it in printf to remove info's default line ending
-      printf "%s" "$(info "info" "$version is not installed, install it now? [y/N] ")"
-      readc response
+      printf "%s" "$(log_info "info" "$version is not installed, install it now? [y/N] ")"
+      read_user_input response
 
       if [ "$response" = "y" ]; then
         ACTIVATE=false
         install "$version"
       else
-        abort "$version is not installed"
+        error_and_abort "$version is not installed"
       fi
     fi
   fi
@@ -707,7 +730,7 @@ self_upgrade() {
   elif command -v wget > /dev/null; then
     wget -qO- https://git.io/g-install | bash -s -- -y
   else
-    abort "curl or wget required"
+    error_and_abort "curl or wget required"
   fi
 }
 
@@ -716,17 +739,13 @@ self_upgrade() {
 #
 
 if [ -z "${GOPATH:-}" ] || [ -z "${GOROOT:-}" ]; then
-  error "\$GOPATH and \$GOROOT environment variables are required."
-  display_help
-  exit 1
+  error_help_abort "\$GOPATH and \$GOROOT environment variables are required."
 fi
 
 BIN_DIR="$GOPATH/bin"
 
 if [ "${PATH##*$BIN_DIR*}" == "$PATH" ]; then
-  error "\$GOPATH/bin not found in \$PATH and it is required."
-  display_help
-  exit 1
+  error_help_abort "\$GOPATH/bin not found in \$PATH and it is required."
 fi
 
 #
@@ -756,9 +775,7 @@ __cmd_args=""
 
 if [ $# -eq 0 ]; then
   if [ -z "$(get_installed_versions)" ]; then
-    error "no versions installed yet"
-    display_help
-    exit 1
+    error_help_abort "no versions installed yet"
   fi
 
   open_interactive_ui
@@ -792,6 +809,6 @@ else
     list) display_installed_with_selected "$(get_current_version)";;
     list-all) display_remote_versions;;
     self-upgrade) self_upgrade;;
-    *) error "Invalid command $__cmd"; display_help; exit 1;;
+    *) error_help_abort "Invalid command $__cmd";;
   esac
 fi
