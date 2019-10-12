@@ -11,6 +11,7 @@
 - Add support for ash, dash, csh, and tcsh to g-install
 - Fix user input source for g-install
 - Fix and normalize error logging
+- Fix POSIX syntax error on BIN_DIR check
 
 ## 0.5.0 - 2019-07-08
 

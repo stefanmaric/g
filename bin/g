@@ -744,7 +744,7 @@ fi
 
 BIN_DIR="$GOPATH/bin"
 
-if [ "${PATH##*$BIN_DIR*}" == "$PATH" ]; then
+if [ "${PATH##*$BIN_DIR*}" = "$PATH" ]; then
   error_help_abort "\$GOPATH/bin not found in \$PATH and it is required."
 fi
 
