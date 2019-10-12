@@ -9,6 +9,7 @@
 - Fix g breaking when using non-GNU `wget`
 - Add handling of misconfigured $GOPATH/bin
 - Add support for ash, dash, csh, and tcsh to g-install
+- Fix user input source for g-install
 
 ## 0.5.0 - 2019-07-08
 
