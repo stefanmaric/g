@@ -366,7 +366,7 @@ get_latest_version() {
 #
 
 get_installed_versions() {
-  find "$GO_VERSIONS_DIR/" -mindepth 1 -maxdepth 1 -type d \
+  find "$GO_VERSIONS_DIR" -mindepth 1 -maxdepth 1 -type d \
     | sed "s|$GO_VERSIONS_DIR/||g" \
     | sort -u -k 1,1n -k 2,2n -k 3,3n -t .
 }
@@ -767,7 +767,7 @@ fi
 # create versions dir if it doesn't exist yet.
 #
 
-GO_VERSIONS_DIR=${GO_VERSIONS_DIR:-$GOROOT/.versions}
+GO_VERSIONS_DIR="$GOROOT/.versions"
 
 if [ ! -d "$GO_VERSIONS_DIR" ]; then
   mkdir -p "$GO_VERSIONS_DIR"

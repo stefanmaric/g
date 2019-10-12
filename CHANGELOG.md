@@ -13,6 +13,7 @@
 - Fix and normalize error logging
 - Fix POSIX syntax error on BIN_DIR check
 - Fix `stty` command breaking on MacOS
+- Fix version listing broken with BSD version of `find`
 
 ## 0.5.0 - 2019-07-08
 
