@@ -30,6 +30,10 @@ set -o errexit
 # Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR.
 set -o nounset
 
+# Uncomment these if you are debugging.
+# set -o xtrace
+# set -o verbose
+
 GOPATH=${GOPATH:-$HOME/go}
 GOROOT=${GOROOT:-$HOME/.go}
 
@@ -67,7 +71,7 @@ if [ -n "${SHELL:-}" ]; then
   USER_SHELL=$(basename "$SHELL")
 fi
 
-SUPPORTED_SHELLS="bash zsh fish"
+SUPPORTED_SHELLS="ash dash bash csh tsch zsh fish"
 INSTALLED_SHELLS=""
 SELECTED_SHELLS=""
 
@@ -160,13 +164,24 @@ download() {
 get_dotfile_for_shell() {
   case "$1" in
     bash)
-      case "$(uname | tr '[:upper:]' '[:lower:]')" in
-        linux|freebsd) echo "$HOME/.bashrc";;
-        darwin) echo "$HOME/.bash_profile";;
-      esac
+      if [ "$(uname | tr '[:upper:]' '[:lower:]')" = "darwin" ]; then
+        echo "$HOME/.bash_profile"
+      else
+        echo "$HOME/.bashrc"
+      fi
     ;;
     fish) echo "$HOME/.config/fish/config.fish";;
     zsh) echo "$HOME/.zshrc";;
+    csh) echo "$HOME/.cshrc";;
+    tcsh) echo "$HOME/.tcshrc";;
+    ash|dash)
+      if [ -z "${ENV:-}" ] || [ ! -f "$ENV" ]; then
+        echo "  ERROR: for ash and dash, the \$ENV var must be properly configured" >&2
+        exit 1
+      else
+        echo "$ENV"
+      fi
+    ;;
   esac
 }
 
@@ -176,7 +191,7 @@ get_dotfile_for_shell() {
 
 get_line_for_shell() {
   case "$1" in
-    bash|zsh)
+    ash|dash|bash|zsh|csh|tcsh)
       printf '\n%s %s %s %s' \
         "export GOPATH=\"$(pretty_print_path "$GOPATH")\";" \
         "export GOROOT=\"$(pretty_print_path "$GOROOT")\";" \
@@ -212,10 +227,12 @@ install_g() {
 
 configure_selected_shells() {
   for shell in $SELECTED_SHELLS; do
+    # First check the dotfile is actually known, then use it.
+    get_dotfile_for_shell "$shell" > /dev/null
     dotfile_path=$(get_dotfile_for_shell "$shell")
     config_line=$(get_line_for_shell "$shell")
 
-    if test -f "$dotfile_path" && grep --quiet "g-install" "$dotfile_path"; then
+    if test -f "$dotfile_path" && grep "g-install" "$dotfile_path" > /dev/null; then
       echo "  info: skipping $shell because g has been configured already in $dotfile_path"
     else
       echo "  info: configuring $shell in $dotfile_path"
@@ -257,6 +274,8 @@ initiate() {
     echo "  are going to be set in:"
     echo
     for shell in $SELECTED_SHELLS; do
+      # First check the dotfile is actually known, then use it.
+      get_dotfile_for_shell "$shell" > /dev/null
       printf '%10s : %s \n' "$shell" "$(get_dotfile_for_shell "$shell")"
     done
     echo
