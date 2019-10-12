@@ -111,6 +111,7 @@ EOF
 # Read one char at the time up-to some limit: <var_name> [<read_limit> = 1]
 # Extracted from: https://unix.stackexchange.com/a/464963
 read_user_input() {
+  file_option=
   input_device=
   var_name=$1
   read_limit=${2:-1}
@@ -124,11 +125,17 @@ read_user_input() {
     input_device="/dev/tty"
   fi
 
+  if command stty -F "$input_device" > /dev/null 2>&1; then
+    file_option="-F"
+  else
+    file_option="-f"
+  fi
+
   # Take a backup of the previous settings beforehand.
-  saved_tty_settings=$(stty -F "$input_device" -g)
+  saved_tty_settings=$(stty "$file_option" "$input_device" -g)
   # Ensure the device is out of icanon, set min and time to sane value, but
   # don't otherwise touch other input or local settings (echo, isig, icrnl...).
-  stty -F "$input_device" -icanon min 1 time 0
+  stty "$file_option" "$input_device" -icanon min 1 time 0
 
   # Reset target variable in case it was in use before.
   eval "$var_name="
@@ -149,7 +156,7 @@ read_user_input() {
   done
 
   # Restore settings saved earlier.
-  stty -F "$input_device" "$saved_tty_settings"
+  stty "$file_option" "$input_device" "$saved_tty_settings"
 }
 
 #

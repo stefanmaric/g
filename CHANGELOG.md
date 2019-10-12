@@ -12,6 +12,7 @@
 - Fix user input source for g-install
 - Fix and normalize error logging
 - Fix POSIX syntax error on BIN_DIR check
+- Fix `stty` command breaking on MacOS
 
 ## 0.5.0 - 2019-07-08
 
