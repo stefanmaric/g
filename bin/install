@@ -115,7 +115,7 @@ read_user_input() {
     input_device="/dev/tty"
   fi
 
-  if command stty -F "$input_device" > /dev/null 2>&1; then
+  if stty -F "$input_device" > /dev/null 2>&1; then
     file_option="-F"
   else
     file_option="-f"

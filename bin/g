@@ -125,7 +125,7 @@ read_user_input() {
     input_device="/dev/tty"
   fi
 
-  if command stty -F "$input_device" > /dev/null 2>&1; then
+  if stty -F "$input_device" > /dev/null 2>&1; then
     file_option="-F"
   else
     file_option="-f"
@@ -319,7 +319,7 @@ download() {
     params="--quiet -O-"
 
     if [ ! "$QUIET" = true ]; then
-      if command wget --help 2>&1 | grep -e '--show-progress' > /dev/null; then
+      if wget --help 2>&1 | grep -e '--show-progress' > /dev/null; then
         params="$params --show-progress"
       fi
     fi

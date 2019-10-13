@@ -14,6 +14,7 @@
 - Fix POSIX syntax error on BIN_DIR check
 - Fix `stty` command breaking on MacOS
 - Fix version listing broken with BSD version of `find`
+- Fix IFs using `command` exiting the script due to errexit
 
 ## 0.5.0 - 2019-07-08
 
