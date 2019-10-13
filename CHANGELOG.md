@@ -15,6 +15,7 @@
 - Fix `stty` command breaking on MacOS
 - Fix version listing broken with BSD version of `find`
 - Fix IFs using `command` exiting the script due to errexit
+- Update docs to reflect latest changes and update roadmap
 
 ## 0.5.0 - 2019-07-08
 
