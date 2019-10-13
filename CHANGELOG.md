@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.6.0 - 2019-10-13
+
 - Make g POSIX compatible and use `sh` instead of `bash`
 - Cleanup and normalize `g` code
 - Make g-install POSIX compatible as well

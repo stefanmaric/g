@@ -65,7 +65,7 @@ esac
 #
 
 display_g_version() {
-  echo "0.4.0"
+  echo "0.6.0"
 }
 
 display_help() {
