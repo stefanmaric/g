@@ -224,7 +224,7 @@ At this point you would have removed `g` and `go` entirely.
 - [ ] Improve docs a bit more
 - [x] Make `g` and `g-install` POSIX compliant
 - [x] Add support for more shells
-- [ ] Warn users they already have a golang installation when using `g-install`
+- [x] Warn users they already have a golang installation when using `g-install`
 - [ ] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
     - [ ] Use `install` only for install and remove the `--download` option
 - [ ] Handle the case when `g` already exists, mainly `zsh` with `oh-my-zsh`

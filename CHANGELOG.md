@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Warn users about existing go installations
 
 ## 0.6.0 - 2019-10-13
 
@@ -67,5 +68,4 @@
 
 ## 0.1.0 - 2018-04-08
 
-### Added
 - Initial release

@@ -78,6 +78,14 @@ if command -v g > /dev/null; then
   esac
 fi
 
+HAS_GO_ALREADY=false
+GO_LOCATION=
+
+if command -v go > /dev/null; then
+  HAS_GO_ALREADY=true
+  GO_LOCATION=$(command -v go)
+fi
+
 NON_INTERACTIVE=false
 
 G_DOWNLOAD_URL="https://git.io/g-bin"
@@ -286,6 +294,10 @@ initiate() {
   yes_g=
   yes_go=
 
+  if [ "${#SELECTED_SHELLS}" -eq 0 ]; then
+    error_and_abort "no shell has been selected for installation"
+  fi
+
   echo
 
   if [ "$IS_UPGRADING" = true ]; then
@@ -295,12 +307,8 @@ initiate() {
   fi
 
   echo
-  echo "  $GOPATH/bin/g"
+  echo "    $GOPATH/bin/g"
   echo
-
-  if [ "${#SELECTED_SHELLS}" -eq 0 ]; then
-    error_and_abort "no shell has been selected for installation"
-  fi
 
   if [ "$IS_UPGRADING" = false ]; then
     echo "The following environment variables:"
@@ -309,7 +317,7 @@ initiate() {
     log_info "\$GOPATH" "$GOPATH"
     log_info "\$PATH" "$GOPATH/bin"
     echo
-    echo "  are going to be set in:"
+    echo "    are going to be set in:"
     echo
     for shell in $SELECTED_SHELLS; do
       # First check the dotfile is actually known, then use it.
@@ -318,13 +326,23 @@ initiate() {
     done
     echo
 
+    if [ "$HAS_GO_ALREADY" = true ]; then
+      echo "warning: it appears you have a go installation already at: ${GO_LOCATION}"
+      echo
+      echo "    g can still be used alongside and the go versions managed by g will take"
+      echo "    precedence over your current go installation, only for the current user ($USER)."
+      echo "    For more details, see: https://github.com/stefanmaric/g"
+      echo
+    fi
+
     if [ "$GOPATH" != "$HOME/go" ]; then
-      echo "  warning: using a non-default \$GOPATH: $(pretty_print_path "$GOPATH")"
+      echo "warning: using a non-default \$GOPATH: $(pretty_print_path "$GOPATH")"
     fi
     if [ "$GOROOT" != "$HOME/.go" ]; then
-      echo "  warning: using a non-default \$GOROOT: $(pretty_print_path "$GOROOT")"
+      echo "warning: using a non-default \$GOROOT: $(pretty_print_path "$GOROOT")"
     fi
     if [ "$GOPATH" != "$HOME/go" ] || [ "$GOROOT" != "$HOME/.go" ]; then
+      echo
       echo "    This usually presents no problem, but be sure it is intended."
       echo
     fi
