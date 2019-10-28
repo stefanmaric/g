@@ -98,6 +98,10 @@ SUPPORTED_SHELLS="ash dash bash csh tsch zsh fish"
 INSTALLED_SHELLS=""
 SELECTED_SHELLS=""
 
+G_ALIAS="g"
+G_ALIAS_CHANGED=false
+G_ALIAS_USED_IN_SHELL=""
+
 #
 # POSIX utils.
 #
@@ -263,6 +267,123 @@ install_g() {
 }
 
 #
+# Check whether 'g' alias is already used, setup alternatives alias if it is
+#
+
+configure_g_alias() {
+  if ! g_alias_defined "$G_ALIAS"; then
+    return 0
+  fi
+
+  G_ALIAS_CHANGED=true
+
+  if [ "$NON_INTERACTIVE" = true ]; then
+    G_ALIAS="ggovm"
+    return 0
+  fi
+
+  while g_alias_defined "$G_ALIAS"; do
+    if ! prompt_set_alias "$G_ALIAS" "$G_ALIAS_USED_IN_SHELL"; then
+      echo
+      echo
+      log_info "info" "skipping setup alias for g"
+      G_ALIAS_CHANGED=false
+      break
+    fi
+
+    G_ALIAS=$(set_alias_name)
+  done
+}
+
+#
+# Iteratively check every selected shells for defined alias
+#
+
+g_alias_defined() {
+  alias_already_used=false
+
+  for shell in $SELECTED_SHELLS; do
+    if exists $shell "$1"; then
+      alias_already_used=true
+      G_ALIAS_USED_IN_SHELL="$shell"
+    fi
+  done
+
+  if [ "$alias_already_used" = true ]; then
+    return 0
+  fi
+
+  return 1
+}
+
+#
+# Check whether command already exists
+#
+
+exists() {
+  case "$1" in
+    zsh)
+      zsh -ci alias | grep "$2=" > /dev/null;
+      ;;
+    bash)
+      bash -ci alias | grep "$2=" > /dev/null;
+      ;;
+    fish)
+      fish -c 'alias' | grep " $2 " > /dev/null;
+      ;;
+    *)
+      return 1;;
+  esac
+}
+
+
+#
+# Prompt user whether they want to set a new alias
+#
+
+prompt_set_alias() {
+  echo
+  printf "Alias '$1' is already defined in '$2', set another alias? [y/N] "
+  yes_alias=
+  read_user_input yes_alias
+
+  case $yes_alias in
+    [Yy]* )
+      return 0;;
+    * )
+      return 1;;
+  esac
+}
+
+
+#
+# Prompt user for new alias name
+#
+
+set_alias_name() {
+  input_device=
+  # Determine where to read user input from.
+  if [ -f "${0:-}" ]; then
+    # When running the script as a binary file, use stdin.
+    input_device="/dev/stdin"
+  else
+    # When running in a pipe, read from the tty.
+    input_device="/dev/tty"
+  fi
+
+  alias_name=
+  echo >&2
+  printf "Enter alias name! [ggovm] " >&2
+  read alias_name < $input_device
+  echo >&2
+  if [ -z "$alias_name" ]; then
+    echo "ggovm"
+  else
+    echo $alias_name
+  fi
+}
+
+#
 # Set environment variables in all selected shells.
 #
 
@@ -278,8 +399,20 @@ configure_selected_shells() {
     else
       log_info "info" "configuring $shell in $dotfile_path"
       echo "$config_line" >> "$dotfile_path"
+      set_g_alias $dotfile_path
     fi
   done
+}
+
+#
+# set alias in dotfile
+#
+
+set_g_alias() {
+  if [ "$G_ALIAS_CHANGED" = true ]; then
+    alias_line="alias $G_ALIAS=\"\$GOPATH/bin/g\"; # $COMMENT_MESSAGE"
+    echo "$alias_line" >> "$1"
+  fi
 }
 
 #
@@ -359,6 +492,7 @@ initiate() {
   echo
 
   install_g
+  configure_g_alias
   configure_selected_shells
 
   echo
