@@ -69,13 +69,9 @@ fi
 IS_UPGRADING=false
 CURRENT_VERSION=
 
-if command -v g > /dev/null; then
-  case "$(command -v g)" in
-    "$GOPATH"*)
-      IS_UPGRADING=true
-      CURRENT_VERSION=$(command g --version)
-    ;;
-  esac
+if [ -x "$GOPATH/bin/g" ] && command "$GOPATH/bin/g" --version > /dev/null 2>&1; then
+  IS_UPGRADING=true
+  CURRENT_VERSION=$(command "$GOPATH/bin/g" --version)
 fi
 
 HAS_GO_ALREADY=false
@@ -368,10 +364,12 @@ initiate() {
   echo
 
   if [ "$IS_UPGRADING" = true ]; then
-    if [ "$CURRENT_VERSION" = "$(command g --version)" ]; then
+    new_version=$(command "$GOPATH/bin/g" --version)
+
+    if [ "$CURRENT_VERSION" = "$new_version" ]; then
       echo "g is already up-to-date"
     else
-      echo "g has been successfully upgraded from $CURRENT_VERSION to $(command g --version)"
+      echo "g has been successfully upgraded from $CURRENT_VERSION to $new_version"
     fi
   else
     echo "g has been successfully installed"
