@@ -219,8 +219,7 @@ error_and_abort() {
 error_help_abort() {
   echo
   log_error  "$*"
-  echo "$(display_help)" >&2
-  echo
+  display_help >&2
   exit 1
 }
 
@@ -732,10 +731,19 @@ run_with_version() {
 }
 
 self_upgrade() {
+  if [ "$0" = "$GOPATH/bin/g" ]; then
+    tmp_dir=${TMPDIR:-"/tmp"}/g-update.$$
+    tmp_file=$tmp/g
+    (umask 077 && mkdir "$tmp_dir") || error_and_abort "couldn't create temp dir $tmp_dir"
+    cp "$0" "$tmp_file"
+    chmod +x "$tmp_file"
+    exec "$tmp_file" self-upgrade
+  fi
+
   if command -v curl > /dev/null; then
-    curl -sSL https://git.io/g-install | bash -s -- -y
+    curl -sSL https://git.io/g-install | sh -s -- -y
   elif command -v wget > /dev/null; then
-    wget -qO- https://git.io/g-install | bash -s -- -y
+    wget -qO- https://git.io/g-install | sh -s -- -y
   else
     error_and_abort "curl or wget required"
   fi

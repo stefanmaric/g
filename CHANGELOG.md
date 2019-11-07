@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Warn users about existing go installations
+- Improve self-upgrade script
 
 ## 0.6.0 - 2019-10-13
 
