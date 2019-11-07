@@ -229,7 +229,7 @@ At this point you would have removed `g` and `go` entirely.
     - [ ] Use `install` only for install and remove the `--download` option
 - [ ] Handle the case when `g` already exists, mainly `zsh` with `oh-my-zsh`
     - [ ] Make it so `g-install` offers the user to setup an alternative alias for `g`
-- [ ] Make the `self-upgrade` command throw if `g` was not installed in the common way
+- [x] Make the `self-upgrade` command throw if `g` was not installed in the common way
 - [ ] Add a `complete` command that generates completions for the supported shells
     - [ ] And have `g-install` setup the shells to call this command for completions
 - [ ] Explore feature to configure shells to autoload go versions based on a project file

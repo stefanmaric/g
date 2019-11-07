@@ -209,6 +209,7 @@ log_error() {
 error_and_abort() {
   echo
   log_error  "$*"
+  echo
   exit 1
 }
 
@@ -731,6 +732,10 @@ run_with_version() {
 }
 
 self_upgrade() {
+  if [ ! -x "$GOPATH/bin/g" ]; then
+    error_and_abort "The self-upgrade command can only be used if g was installed using g-install"
+  fi
+
   if [ "$0" = "$GOPATH/bin/g" ]; then
     tmp_dir=${TMPDIR:-"/tmp"}/g-update.$$
     tmp_file=$tmp/g

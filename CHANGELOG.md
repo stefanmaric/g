@@ -5,6 +5,7 @@
 - Warn users about existing go installations
 - Improve self-upgrade script
 - Improve previous installation detection on g-install
+- Make self-upgrade throw if g was not installed via g-install
 
 ## 0.6.0 - 2019-10-13
 
