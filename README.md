@@ -140,6 +140,8 @@ curl -sSL https://git.io/g-install | sh -s
     g install latest            Install or activate the latest go release
     g install -a 386 latest     Force 32 bit architecture
     g install -o darwin latest  Override operating system
+    g download <version>        Download go <version>
+    g set <version>             Switch to go <version>
     g run <version>             Run a given version of go
     g which <version>           Output bin path for <version>
     g remove <version ...>      Remove the given version(s)
@@ -154,7 +156,6 @@ curl -sSL https://git.io/g-install | sh -s
     -h, --help              Display help information and exit
     -v, --version           Output current version of g and exit
     -q, --quiet             Disable curl output (if available)
-    -d, --download          Download only
     -c, --no-color          Force disabled color output
     -y, --non-interactive   Prevent prompts
     -o, --os                Override operating system
@@ -225,8 +226,8 @@ At this point you would have removed `g` and `go` entirely.
 - [x] Make `g` and `g-install` POSIX compliant
 - [x] Add support for more shells
 - [x] Warn users they already have a golang installation when using `g-install`
-- [ ] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
-    - [ ] Use `install` only for install and remove the `--download` option
+- [x] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
+    - [x] Use `install` only for install and remove the `--download` option
 - [x] Handle the case when `g` already exists, mainly `zsh` with `oh-my-zsh`
     - [x] Make it so `g-install` offers the user to setup an alternative alias for `g`
 - [x] Make the `self-upgrade` command throw if `g` was not installed in the common way
