@@ -227,8 +227,8 @@ At this point you would have removed `g` and `go` entirely.
 - [x] Warn users they already have a golang installation when using `g-install`
 - [ ] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
     - [ ] Use `install` only for install and remove the `--download` option
-- [ ] Handle the case when `g` already exists, mainly `zsh` with `oh-my-zsh`
-    - [ ] Make it so `g-install` offers the user to setup an alternative alias for `g`
+- [x] Handle the case when `g` already exists, mainly `zsh` with `oh-my-zsh`
+    - [x] Make it so `g-install` offers the user to setup an alternative alias for `g`
 - [x] Make the `self-upgrade` command throw if `g` was not installed in the common way
 - [ ] Add a `complete` command that generates completions for the supported shells
     - [ ] And have `g-install` setup the shells to call this command for completions
