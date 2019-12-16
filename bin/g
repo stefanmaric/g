@@ -38,7 +38,6 @@ set -o nounset
 # Options.
 #
 
-ACTIVATE=true
 QUIET=false
 NO_COLOR=false
 NON_INTERACTIVE=false
@@ -80,6 +79,8 @@ display_help() {
     g install latest            Install or activate the latest go release
     g install -a 386 latest     Force 32 bit architecture
     g install -o darwin latest  Override operating system
+    g download <version>        Download go <version>
+    g set <version>             Switch to go <version>
     g run <version>             Run a given version of go
     g which <version>           Output bin path for <version>
     g remove <version ...>      Remove the given version(s)
@@ -94,7 +95,6 @@ display_help() {
     -h, --help              Display help information and exit
     -v, --version           Output current version of g and exit
     -q, --quiet             Disable curl output (if available)
-    -d, --download          Download only
     -c, --no-color          Force disabled color output
     -y, --non-interactive   Prevent prompts
     -o, --os                Override operating system
@@ -303,7 +303,7 @@ is_url_ok() {
 # Download file with cUrl or fallback to wget.
 #
 
-download() {
+download_file() {
   if command -v curl > /dev/null; then
     params="--location"
 
@@ -344,7 +344,7 @@ get_all_remote_versions() {
     pattern='go[[:digit:]]+(\.[[:digit:]]+)+\b'
   fi
 
-  download 2> /dev/null "https://go.googlesource.com/go/+refs" \
+  download_file 2> /dev/null "https://go.googlesource.com/go/+refs" \
     | grep -E -o '\"/go/\+/refs/tags/go.+?\"' \
     | grep -E -o "$pattern" \
     | tr -d 'go' \
@@ -359,6 +359,18 @@ get_all_remote_versions() {
 
 get_latest_version() {
   get_all_remote_versions | tail -n1
+}
+
+#
+# Resolve Version argument
+#
+
+resolve_version_argument() {
+  if [ "$1" = "latest" ]; then
+    get_latest_version
+  else
+    echo "$1"
+  fi
 }
 
 #
@@ -542,7 +554,7 @@ open_interactive_ui() {
       *)
         # If the user hit the ENTER key, the variable includes a new line.
         if [ "$(echo "$key" | wc -l)" -gt 1 ]; then
-          activate "$selected"
+          set_version "$selected"
           leave_fullscreen
           go version
           exit
@@ -556,10 +568,14 @@ open_interactive_ui() {
 # Activate <version>
 #
 
-activate() {
-  version=$1
+set_version() {
+  version=$(resolve_version_argument "$1")
   active=$(get_current_version)
   dir="$GO_VERSIONS_DIR/$version"
+
+  if [ ! -d $dir ]; then
+    error_and_abort "Version $version is not available. Use 'g install $version' to install it."
+  fi
 
   if [ "$version" != "$active" ]; then
     if [ ! -e "$dir/g.lock" ]; then
@@ -579,24 +595,31 @@ activate() {
 # Install <version>.
 #
 
-install() {
-  version=$1
-
-  if [ "$version" = "latest" ]; then
-    version=$(get_latest_version)
-  fi
-
+install_version() {
+  version=$(resolve_version_argument "$1")
   dir="$GO_VERSIONS_DIR/$version"
 
   if [ -d "$dir" ]; then
-    if [ "$ACTIVATE" = true ]; then
-      activate "$version"
-    fi
+    set_version "$version"
     exit
   fi
 
+  download_version $version
+  set_version $version
+
+  log_info "installed" "$(go version)"
+}
+
+#
+# Download <version>.
+#
+
+download_version() {
+  version=$(resolve_version_argument "$1")
+  dir="$GO_VERSIONS_DIR/$version"
+
   echo
-  log_info "installing" "$version"
+  log_info "selected" "$version"
 
   url=$(get_tarball_url "$version")
 
@@ -616,17 +639,13 @@ install() {
 
   log_info "downloading" "$url"
 
-  download "$url" | tar -zx --strip-components=1
+  download_file "$url" | tar -zx --strip-components=1
 
   [ $QUIET = false ] && erase_line
 
   rm -f "$dir/g.lock"
 
-  if [ "$ACTIVATE" = true ]; then
-    activate "$version"
-    log_info "installed" "$(go version)"
-  fi
-  echo
+  log_info "downloaded" "$version"
 }
 
 #
@@ -672,12 +691,7 @@ display_bin_path_for_version() {
     error_and_abort "version required"
   fi
 
-  version=$1
-
-  if [ "$version" = "latest" ]; then
-    version=$(get_latest_version)
-  fi
-
+  version=$(resolve_version_argument "$1")
   bin="$GO_VERSIONS_DIR/$version/bin/go"
 
   if [ -f "$bin" ]; then
@@ -696,12 +710,8 @@ run_with_version() {
     error_and_abort "version required"
   fi
 
-  version=$1
+  version=$(resolve_version_argument "$1")
   response=
-
-  if [ "$version" = "latest" ]; then
-    version=$(get_latest_version)
-  fi
 
   root="$GO_VERSIONS_DIR/$version"
   bin="$root/bin/go"
@@ -712,16 +722,14 @@ run_with_version() {
     echo
 
     if [ "$NON_INTERACTIVE" = true ]; then
-      ACTIVATE=false
-      install "$version"
+      download_version "$version"
     else
       # Wrap it in printf to remove info's default line ending
       printf "%s" "$(log_info "info" "$version is not installed, install it now? [y/N] ")"
       read_user_input response
 
       if [ "$response" = "y" ]; then
-        ACTIVATE=false
-        install "$version"
+        download_version "$version"
       else
         error_and_abort "$version is not installed"
       fi
@@ -802,10 +810,9 @@ if [ $# -eq 0 ]; then
 else
   while test $# -ne 0; do
     case $1 in
-      install|run|remove|prune|which|list|list-all|self-upgrade) __cmd=$1;;
+      install|set|download|run|remove|prune|which|list|list-all|self-upgrade) __cmd=$1;;
       -h|--help|help) display_help; exit;;
       -v|--version) display_g_version; exit;;
-      -d|--download) ACTIVATE=false;;
       -q|--quiet) QUIET=true;;
       -c|--no-color) NO_COLOR=true;;
       -y|--non-interactive) NON_INTERACTIVE=true;;
@@ -821,7 +828,9 @@ else
   # The unquoted expansions here are intentional.
   # shellcheck disable=SC2086
   case $__cmd in
-    install) install $__cmd_args;;
+    install) install_version $__cmd_args;;
+    download) download_version $__cmd_args;;
+    set) set_version $__cmd_args;;
     run) run_with_version $__cmd_args;;
     remove) remove_versions $__cmd_args;;
     prune) prune_versions;;
