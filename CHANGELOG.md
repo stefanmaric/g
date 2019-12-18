@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.7.0 - 2019-12-18
+
 - Warn users about existing go installations
 - Improve self-upgrade script
 - Improve previous installation detection on g-install
