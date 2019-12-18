@@ -2,8 +2,6 @@
 
 Simple go version manager, gluten-free.
 
-[![license](https://img.shields.io/github/license/stefanmaric/g.svg)](./LICENSE)
-
 <div align="center"><img src="screencast.gif" alt="screencast"></div>
 
 ## Why?
@@ -15,15 +13,19 @@ Existing version managers build go from source, have too many dependencies, poll
 
 ## Features
 
-* Works no matter what shell you use as long as `$GOPATH` and `$GOROOT` are exported, which are not specific to `g` but idiomatic to `go`.
+* Run any go version on demand.
+* Single portable shell script that ideally lives where your go binaries live.
+* Works no matter what shell you use as long as `$GOPATH` and `$GOROOT` are exported which...
+* ...is idiomatic to `go` and not specific to `g`.
 * No need to `source` functions in your shell config.
-* Single shell script that ideally lives where your go binaries live.
 * Downloads pre-built binaries so it is fast and...
 * ...requires no git, no mercurial, no gcc, no xcode, etc.
 * `curl` and `wget` first-class support alike.
 * Colorful UI and interactive but safe to pipe and use in automated scripts.
-* self-upgrade command to keep up-to-date
-* Get started with a single line.
+* self-upgrade command to keep up-to-date.
+* Option to get go beta versions.
+* Get started in golang with a single line using the install script.
+* The install script detects name collisions and helps you set an alternative name.
 
 
 ## Requirements
@@ -68,7 +70,7 @@ The install script currently supports the following shells:
 * csh
 * tcsh
 
-That doesn't mean you cannot use `g` with other shells like `tcsh`, just proceed with the [manual installation](#manual-installation).
+That doesn't mean you cannot use `g` with other shells, just proceed with the [manual installation](#manual-installation).
 
 The install script is going to select your default shell for configuration. You might see what your default shell is by running:
 
@@ -86,6 +88,12 @@ You might as well configure several shells, but that's usually not required:
 
 ```
 curl -sSL https://git.io/g-install | sh -s -- fish bash zsh
+```
+
+Use the `-y` option to skip the prompts and assume "yes" for everything:
+
+```shell
+curl -sSL https://git.io/g-install | sh -s -- -y
 ```
 
 ### Changing defaults
@@ -135,32 +143,30 @@ curl -sSL https://git.io/g-install | sh -s
 
   Commands:
 
-    g                           Open interactive UI with installed versions
-    g install <version>         Install go <version>
-    g install latest            Install or activate the latest go release
-    g install -a 386 latest     Force 32 bit architecture
-    g install -o darwin latest  Override operating system
-    g download <version>        Download go <version>
-    g set <version>             Switch to go <version>
-    g run <version>             Run a given version of go
-    g which <version>           Output bin path for <version>
-    g remove <version ...>      Remove the given version(s)
-    g prune                     Remove all versions except the current version
-    g list                      Output installed go versions
-    g list-all                  Output all available go versions
-    g self-upgrade              Upgrades g to the latest version
-    g help                      Display help information, same as g --help
+    g                         Open interactive UI with downloaded versions
+    g install latest          Download and set the latest go release
+    g install <version>       Download and set go <version>
+    g download <version>      Download go <version>
+    g set <version>           Switch to go <version>
+    g run <version>           Run a given version of go
+    g which <version>         Output bin path for <version>
+    g remove <version ...>    Remove the given version(s)
+    g prune                   Remove all versions except the current version
+    g list                    Output downloaded go versions
+    g list-all                Output all available, remote go versions
+    g self-upgrade            Upgrades g to the latest version
+    g help                    Display help information, same as g --help
 
   Options:
 
-    -h, --help              Display help information and exit
-    -v, --version           Output current version of g and exit
-    -q, --quiet             Disable curl output (if available)
-    -c, --no-color          Force disabled color output
-    -y, --non-interactive   Prevent prompts
-    -o, --os                Override operating system
-    -a, --arch              Override system architecture
-    -u, --unstable          Include unstable versions in list
+    -h, --help                Display help information and exit
+    -v, --version             Output current version of g and exit
+    -q, --quiet               Suppress almost all output
+    -c, --no-color            Force disabled color output
+    -y, --non-interactive     Prevent prompts
+    -o, --os                  Override operating system
+    -a, --arch                Override system architecture
+    -u, --unstable            Include unstable versions in list
 ```
 
 ## Uninstall
