@@ -10,3 +10,16 @@ indent_size = 2
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
+
+[Makefile]
+indent_size = 4
+indent_style = tab
+
+# These are shfmt extensions
+# See: https://github.com/mvdan/sh
+
+[bin/*]
+shell_variant = posix
+binary_next_line = true
+switch_case_indent = true
+space_redirects = true
