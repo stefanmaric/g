@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 # POSIX shell doesn't support errtrace nor pipefail.
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -141,15 +140,20 @@ read_user_input() {
   while
     # Read one byte, using a work around for the fact that command substitution
     # strips the last character.
-    c=$(dd if=$input_device bs=1 count=1 2> /dev/null; echo .)
+    c=$(
+      dd if=$input_device bs=1 count=1 2> /dev/null
+      echo .
+    )
     c=${c%.}
 
     # Break out of the loop on empty input (EOF) or if a full character has been
     # accumulated in the output variable (using "wc -m" to count the number of
     # characters).
-    test -n "$c" && \
-      eval "$var_name=\"\${${var_name}}\$c\";
-        [ \"\$(printf '%s' \"\$$var_name\" | wc -m)\" -lt $read_limit ]"; do
+    test -n "$c" && eval "
+      $var_name=\"\${${var_name}}\$c\"
+      [ \"\$(printf '%s' \"\$$var_name\" | wc -m)\" -lt $read_limit ]
+    "
+  do
     continue
   done
 
@@ -215,18 +219,18 @@ get_dotfile_for_shell() {
       else
         echo "$HOME/.bashrc"
       fi
-    ;;
-    fish) echo "$HOME/.config/fish/config.fish";;
-    zsh) echo "$HOME/.zshrc";;
-    csh) echo "$HOME/.cshrc";;
-    tcsh) echo "$HOME/.tcshrc";;
-    ash|dash)
+      ;;
+    fish) echo "$HOME/.config/fish/config.fish" ;;
+    zsh) echo "$HOME/.zshrc" ;;
+    csh) echo "$HOME/.cshrc" ;;
+    tcsh) echo "$HOME/.tcshrc" ;;
+    ash | dash)
       if [ -z "${ENV:-}" ] || [ ! -f "$ENV" ]; then
         error_and_abort "for ash and dash, the \$ENV var must be properly configured"
       else
         echo "$ENV"
       fi
-    ;;
+      ;;
   esac
 }
 
@@ -236,20 +240,20 @@ get_dotfile_for_shell() {
 
 get_line_for_shell() {
   case "$1" in
-    ash|dash|bash|zsh|csh|tcsh)
+    ash | dash | bash | zsh | csh | tcsh)
       printf '\n%s %s %s %s' \
         "export GOPATH=\"$(pretty_print_path "$GOPATH")\";" \
         "export GOROOT=\"$(pretty_print_path "$GOROOT")\";" \
         "export PATH=\"\$GOPATH/bin:\$PATH\";" \
         "# $COMMENT_MESSAGE"
-    ;;
+      ;;
     fish)
       printf '\n%s %s %s %s' \
         "set -gx GOPATH $(pretty_print_path "$GOPATH");" \
         "set -gx GOROOT $(pretty_print_path "$GOROOT");" \
         "set -gx PATH \$GOPATH/bin \$PATH;" \
         "# $COMMENT_MESSAGE"
-    ;;
+      ;;
   esac
 }
 
@@ -323,19 +327,19 @@ g_alias_defined() {
 exists() {
   case "$1" in
     zsh)
-      zsh -ci alias | grep "$2=" > /dev/null;
+      zsh -ci alias | grep "$2=" > /dev/null
       ;;
     bash)
-      bash -ci alias | grep "$2=" > /dev/null;
+      bash -ci alias | grep "$2=" > /dev/null
       ;;
     fish)
-      fish -c 'alias' | grep " $2 " > /dev/null;
+      fish -c 'alias' | grep " $2 " > /dev/null
       ;;
     *)
-      return 1;;
+      return 1
+      ;;
   esac
 }
-
 
 #
 # Prompt user whether they want to set a new alias
@@ -348,13 +352,14 @@ prompt_set_alias() {
   read_user_input yes_alias
 
   case $yes_alias in
-    [Yy]* )
-      return 0;;
-    * )
-      return 1;;
+    [Yy]*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
   esac
 }
-
 
 #
 # Prompt user for new alias name
@@ -552,9 +557,9 @@ while IFS= read -r shell_path; do
       SELECTED_SHELLS="$SELECTED_SHELLS $shell_name"
     fi
   fi
-# This file lists abs paths for installed shells. This at-bottom syntax is to
-# prevent subshells and allow for the loop code to modify global variables.
-# See: https://stackoverflow.com/questions/16854280/
+  # This file lists abs paths for installed shells. This at-bottom syntax is to
+  # prevent subshells and allow for the loop code to modify global variables.
+  # See: https://stackoverflow.com/questions/16854280/
 done < /etc/shells
 
 # This script is useless if it doesn't support any of user's installed shells.
@@ -562,14 +567,13 @@ if [ "${#INSTALLED_SHELLS}" -eq 0 ]; then
   error_and_abort "none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
 fi
 
-
 #
 # Handle arguments.
 #
 
 while test $# -ne 0; do
   case "$1" in
-    -y|--non-interactive) NON_INTERACTIVE=true;;
+    -y | --non-interactive) NON_INTERACTIVE=true ;;
     *)
       # shellcheck disable=SC2086
       if list_includes "$1" $INSTALLED_SHELLS; then
@@ -582,7 +586,7 @@ while test $# -ne 0; do
       else
         error_and_abort "unknown argument or shell \"$1\""
       fi
-    ;;
+      ;;
   esac
   shift
 done

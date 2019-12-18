@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 # POSIX shell doesn't support errtrace nor pipefail.
 
 # Exit on error. Append "|| true" if you expect an error.
@@ -56,7 +55,7 @@ fi
 case $TERM in
   "xterm"*) ;;
   "screen"*) ;;
-  *) NO_COLOR=true;;
+  *) NO_COLOR=true ;;
 esac
 
 #
@@ -68,7 +67,7 @@ display_g_version() {
 }
 
 display_help() {
-  cat <<-EOF
+  cat <<- EOF
 
   Usage: g [COMMAND] [options] [args]
 
@@ -143,15 +142,20 @@ read_user_input() {
   while
     # Read one byte, using a work around for the fact that command substitution
     # strips the last character.
-    c=$(dd if=$input_device bs=1 count=1 2> /dev/null; echo .)
+    c=$(
+      dd if=$input_device bs=1 count=1 2> /dev/null
+      echo .
+    )
     c=${c%.}
 
     # Break out of the loop on empty input (EOF) or if a full character has been
     # accumulated in the output variable (using "wc -m" to count the number of
     # characters).
-    test -n "$c" && \
-      eval "$var_name=\"\${${var_name}}\$c\";
-        [ \"\$(printf '%s' \"\$$var_name\" | wc -m)\" -lt $read_limit ]"; do
+    test -n "$c" && eval "
+      $var_name=\"\${${var_name}}\$c\"
+      [ \"\$(printf '%s' \"\$$var_name\" | wc -m)\" -lt $read_limit ]
+    "
+  do
     continue
   done
 
@@ -208,7 +212,7 @@ log_error() {
 
 error_and_abort() {
   echo
-  log_error  "$*"
+  log_error "$*"
   echo
   exit 1
 }
@@ -219,7 +223,7 @@ error_and_abort() {
 
 error_help_abort() {
   echo
-  log_error  "$*"
+  log_error "$*"
   display_help >&2
   exit 1
 }
@@ -240,7 +244,6 @@ hide_cursor() {
 show_cursor() {
   printf '\033[?25h'
 }
-
 
 #
 # Functions used when showing interactive UI.
@@ -352,7 +355,6 @@ get_all_remote_versions() {
     | uniq
 }
 
-
 #
 # Display the latest release version.
 #
@@ -412,7 +414,6 @@ get_prev_installed_version() {
   get_installed_versions | grep "$1" -B 1 | head -n 1
 }
 
-
 #
 # Assemble the tarball url for a given <version>.
 #
@@ -424,15 +425,15 @@ get_tarball_url() {
   arch=
 
   case "$platform" in
-    linux*) os=linux;;
-    darwin*) os=darwin;;
-    freebsd*) os=freebsd;;
+    linux*) os=linux ;;
+    darwin*) os=darwin ;;
+    freebsd*) os=freebsd ;;
   esac
 
   case "$platform" in
-    *i686*|*i386*) arch=386;;
-    *x86_64*) arch=amd64;;
-    *armv6l*|*armv7l*) arch=armv6l;;
+    *i686* | *i386*) arch=386 ;;
+    *x86_64*) arch=amd64 ;;
+    *armv6l* | *armv7l*) arch=armv6l ;;
   esac
 
   if [ -n "$OS" ]; then
@@ -520,37 +521,37 @@ open_interactive_ui() {
       "$ESCAPE_SEQ")
         # Handle ESC sequences followed by other characters, i.e. arrow keys.
         read_user_input tmp
-        if  [ "$tmp" = "[" ]; then
+        if [ "$tmp" = "[" ]; then
           read_user_input arrow
           case $arrow in
             "$UP")
               clear
               selected=$(get_prev_installed_version "$selected")
               display_installed_with_selected "$selected"
-            ;;
+              ;;
             "$DOWN")
               clear
               selected=$(get_next_installed_version "$selected")
               display_installed_with_selected "$selected"
-            ;;
+              ;;
           esac
         fi
-      ;;
+        ;;
       "k")
         clear
         selected=$(get_prev_installed_version "$selected")
         display_installed_with_selected "$selected"
-      ;;
+        ;;
       "j")
         clear
         selected=$(get_next_installed_version "$selected")
         display_installed_with_selected "$selected"
-      ;;
+        ;;
       "q")
         clear
         leave_fullscreen
         exit
-      ;;
+        ;;
       *)
         # If the user hit the ENTER key, the variable includes a new line.
         if [ "$(echo "$key" | wc -l)" -gt 1 ]; then
@@ -559,7 +560,7 @@ open_interactive_ui() {
           go version
           exit
         fi
-      ;;
+        ;;
     esac
   done
 }
@@ -810,17 +811,32 @@ if [ $# -eq 0 ]; then
 else
   while test $# -ne 0; do
     case $1 in
-      install|set|download|run|remove|prune|which|list|list-all|self-upgrade) __cmd=$1;;
-      -h|--help|help) display_help; exit;;
-      -v|--version) display_g_version; exit;;
-      -q|--quiet) QUIET=true;;
-      -c|--no-color) NO_COLOR=true;;
-      -y|--non-interactive) NON_INTERACTIVE=true;;
-      -o|--os) shift; OS=$1;;
-      -a|--arch) shift; ARCH=$1;;
-      -u|--unstable) INCLUDE_UNSTABLE=true;;
-      --) __cmd_args="$__cmd_args $*"; break;;
-      *) __cmd_args="$__cmd_args $1";;
+      install | set | download | run | remove | prune | which | list | list-all | self-upgrade) __cmd=$1 ;;
+      -h | --help | help)
+        display_help
+        exit
+        ;;
+      -v | --version)
+        display_g_version
+        exit
+        ;;
+      -q | --quiet) QUIET=true ;;
+      -c | --no-color) NO_COLOR=true ;;
+      -y | --non-interactive) NON_INTERACTIVE=true ;;
+      -o | --os)
+        shift
+        OS=$1
+        ;;
+      -a | --arch)
+        shift
+        ARCH=$1
+        ;;
+      -u | --unstable) INCLUDE_UNSTABLE=true ;;
+      --)
+        __cmd_args="$__cmd_args $*"
+        break
+        ;;
+      *) __cmd_args="$__cmd_args $1" ;;
     esac
     shift
   done
@@ -828,16 +844,16 @@ else
   # The unquoted expansions here are intentional.
   # shellcheck disable=SC2086
   case $__cmd in
-    install) install_version $__cmd_args;;
-    download) download_version $__cmd_args;;
-    set) set_version $__cmd_args;;
-    run) run_with_version $__cmd_args;;
-    remove) remove_versions $__cmd_args;;
-    prune) prune_versions;;
-    which) display_bin_path_for_version $__cmd_args;;
-    list) display_installed_with_selected "$(get_current_version)";;
-    list-all) display_remote_versions;;
-    self-upgrade) self_upgrade;;
-    *) error_help_abort "Invalid command $__cmd";;
+    install) install_version $__cmd_args ;;
+    download) download_version $__cmd_args ;;
+    set) set_version $__cmd_args ;;
+    run) run_with_version $__cmd_args ;;
+    remove) remove_versions $__cmd_args ;;
+    prune) prune_versions ;;
+    which) display_bin_path_for_version $__cmd_args ;;
+    list) display_installed_with_selected "$(get_current_version)" ;;
+    list-all) display_remote_versions ;;
+    self-upgrade) self_upgrade ;;
+    *) error_help_abort "Invalid command $__cmd" ;;
   esac
 fi
