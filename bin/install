@@ -343,7 +343,7 @@ exists() {
 
 prompt_set_alias() {
   echo
-  printf "Alias '$1' is already defined in '$2', set another alias? [y/N] "
+  printf 'Alias "%s" is already defined in "%s", set another alias? [y/N] ' "$1" "$2"
   yes_alias=
   read_user_input yes_alias
 
@@ -374,12 +374,12 @@ set_alias_name() {
   alias_name=
   echo >&2
   printf "Enter alias name! [ggovm] " >&2
-  read alias_name < $input_device
+  read -r alias_name < $input_device
   echo >&2
   if [ -z "$alias_name" ]; then
     echo "ggovm"
   else
-    echo $alias_name
+    echo "$alias_name"
   fi
 }
 
@@ -399,7 +399,7 @@ configure_selected_shells() {
     else
       log_info "info" "configuring $shell in $dotfile_path"
       echo "$config_line" >> "$dotfile_path"
-      set_g_alias $dotfile_path
+      set_g_alias "$dotfile_path"
     fi
   done
 }

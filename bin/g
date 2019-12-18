@@ -573,7 +573,7 @@ set_version() {
   active=$(get_current_version)
   dir="$GO_VERSIONS_DIR/$version"
 
-  if [ ! -d $dir ]; then
+  if [ ! -d "$dir" ]; then
     error_and_abort "Version $version is not available. Use 'g install $version' to install it."
   fi
 
@@ -604,8 +604,8 @@ install_version() {
     exit
   fi
 
-  download_version $version
-  set_version $version
+  download_version "$version"
+  set_version "$version"
 
   log_info "installed" "$(go version)"
 }

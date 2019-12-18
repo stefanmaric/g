@@ -7,6 +7,7 @@
 - Improve previous installation detection on g-install
 - Make self-upgrade throw if g was not installed via g-install
 - Add Makefile with lint and format targets for better DX
+- Fix shellcheck lint errors
 
 ## 0.6.0 - 2019-10-13
 
