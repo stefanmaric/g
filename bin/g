@@ -745,7 +745,7 @@ self_upgrade() {
 
   if [ "$0" = "$GOPATH/bin/g" ]; then
     tmp_dir=${TMPDIR:-"/tmp"}/g-update.$$
-    tmp_file=$tmp/g
+    tmp_file=$tmp_dir/g
     (umask 077 && mkdir "$tmp_dir") || error_and_abort "couldn't create temp dir $tmp_dir"
     cp "$0" "$tmp_file"
     chmod +x "$tmp_file"

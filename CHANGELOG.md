@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix self-upgrade failing due to typo
+  - If you upgraded to the 0.7.0 already, you will need to run the install script again
 
 ## 0.7.0 - 2019-12-18
 
