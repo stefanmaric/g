@@ -428,7 +428,7 @@ get_tarball_url() {
     freebsd*) os=freebsd ;;
   esac
 
-  case "$platform" in
+  case "$(uname -m)" in
     *i686* | *i386*) arch=386 ;;
     *x86_64*) arch=amd64 ;;
     *armv6l* | *armv7l*) arch=armv6l ;;
