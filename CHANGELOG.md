@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.8.0 - 2019-12-24
+
 - Fix arch detection bug in MacOS with coreutils (#15, thanks @ddlees)
 - Document decisions around architecture detection
 - Add support for arm64, ppc64l, and s390x arch detection
