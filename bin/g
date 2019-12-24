@@ -438,6 +438,9 @@ get_tarball_url() {
     *i686* | *i386*) arch=386 ;;
     *x86_64*) arch=amd64 ;;
     *armv6l* | *armv7l*) arch=armv6l ;;
+    *aarch64* | *armv8*) arch=arm64 ;;
+    *ppc64*) arch=ppc64le ;;
+    *s390*) arch=s390x ;;
   esac
 
   if [ -n "$OS" ]; then
