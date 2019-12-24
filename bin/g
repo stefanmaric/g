@@ -418,17 +418,23 @@ get_prev_installed_version() {
 
 get_tarball_url() {
   version=$1
-  platform="$(uname -a | tr '[:upper:]' '[:lower:]')"
   os=
   arch=
 
-  case "$platform" in
+  case "$(uname | tr '[:upper:]' '[:lower:]')" in
     linux*) os=linux ;;
     darwin*) os=darwin ;;
     freebsd*) os=freebsd ;;
   esac
 
-  case "$(uname -m)" in
+  # The use of uname -m instead of -a is intended since coreutils' uname will include "i386" on its
+  # output in MacOS even if the system is 64bits.
+  # This is probably related to how darwin flags the system to differentiate ppc from intel.
+  #
+  # See: https://github.com/stefanmaric/g/pull/15
+  # See: https://unix.stackexchange.com/questions/518318/what-does-i386-mean-on-macos-mojave
+  # See: https://bug-coreutils.gnu.narkive.com/GMke0VIF/uname-problem-on-mac-os-x
+  case "$(uname -m | tr '[:upper:]' '[:lower:]')" in
     *i686* | *i386*) arch=386 ;;
     *x86_64*) arch=amd64 ;;
     *armv6l* | *armv7l*) arch=armv6l ;;
