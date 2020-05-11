@@ -3,6 +3,12 @@
 ## Unreleased
 
 
+## 0.9.0 - 2020-05-11
+
+- Change shebang to /usr/bin/env sh because it will search sh from the user $PATH
+- Add current command to show current go version simply
+- Add load command to set go version for given project directory based on go.mod file
+
 ## 0.8.0 - 2019-12-24
 
 - Fix arch detection bug in MacOS with coreutils (#15, thanks @ddlees)

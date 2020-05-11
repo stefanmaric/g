@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /usr/bin/env sh
 
 # MIT License
 #
@@ -63,7 +63,7 @@ esac
 #
 
 display_g_version() {
-  echo "0.8.0"
+  echo "0.9.0"
 }
 
 display_help() {
@@ -74,11 +74,13 @@ display_help() {
   Commands:
 
     g                         Open interactive UI with downloaded versions
+    g current                 Output current version
     g install latest          Download and set the latest go release
     g install <version>       Download and set go <version>
     g download <version>      Download go <version>
     g set <version>           Switch to go <version>
     g run <version>           Run a given version of go
+    g load <project dir>      Set to <project dir> go version
     g which <version>         Output bin path for <version>
     g remove <version ...>    Remove the given version(s)
     g prune                   Remove all versions except the current version
@@ -771,6 +773,32 @@ self_upgrade() {
 }
 
 #
+# Autoload go version for the given <projectDir>
+#
+
+load_project_version() {
+  if [ ! -d "$1" ]; then
+     error_and_abort "directory $1 not found"
+  fi
+
+  if [ "$1" != */ ]; then
+    cleanPath="$1/"
+  fi
+
+  goMod="${cleanPath}go.mod"
+
+  if [ ! -f "$goMod" ]; then
+    error_and_abort "file $goMod not found"
+  fi
+
+  goVersion=$(grep "^go [0-9\.]*" $goMod | sed -e "s/go //" )
+
+  log_info "selected" "go $goVersion"
+
+  set_version $goVersion
+}
+
+#
 # Make sure required go env vars are available.
 #
 
@@ -818,7 +846,7 @@ if [ $# -eq 0 ]; then
 else
   while test $# -ne 0; do
     case $1 in
-      install | set | download | run | remove | prune | which | list | list-all | self-upgrade) __cmd=$1 ;;
+      current | install | set | download | run | load | remove | prune | which | list | list-all | self-upgrade) __cmd=$1 ;;
       -h | --help | help)
         display_help
         exit
@@ -851,10 +879,12 @@ else
   # The unquoted expansions here are intentional.
   # shellcheck disable=SC2086
   case $__cmd in
+    current) get_current_version ;;
     install) install_version $__cmd_args ;;
     download) download_version $__cmd_args ;;
     set) set_version $__cmd_args ;;
     run) run_with_version $__cmd_args ;;
+    load) load_project_version $__cmd_args;;
     remove) remove_versions $__cmd_args ;;
     prune) prune_versions ;;
     which) display_bin_path_for_version $__cmd_args ;;

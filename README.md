@@ -144,11 +144,13 @@ curl -sSL https://git.io/g-install | sh -s
   Commands:
 
     g                         Open interactive UI with downloaded versions
+    g current                 Output current version
     g install latest          Download and set the latest go release
     g install <version>       Download and set go <version>
     g download <version>      Download go <version>
     g set <version>           Switch to go <version>
     g run <version>           Run a given version of go
+    g load <project dir>      Set to <project dir> go version
     g which <version>         Output bin path for <version>
     g remove <version ...>    Remove the given version(s)
     g prune                   Remove all versions except the current version
@@ -239,7 +241,7 @@ At this point you would have removed `g` and `go` entirely.
 - [x] Make the `self-upgrade` command throw if `g` was not installed in the common way
 - [ ] Add a `complete` command that generates completions for the supported shells
     - [ ] And have `g-install` setup the shells to call this command for completions
-- [ ] Explore feature to configure shells to autoload go versions based on a project file
+- [x] Explore feature to configure shells to autoload go versions based on a project file
 - [ ] Test it on diff platforms
 - [ ] Crete a test setup with docker and Github actions
 
