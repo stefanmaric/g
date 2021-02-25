@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improve performance of switching between different Go versions to nearly instant
 
 ## 0.8.1 - 2021-03-17
 
