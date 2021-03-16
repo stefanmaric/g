@@ -4,7 +4,7 @@ PLATFORM=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(shell uname -m | tr '[:upper:]' '[:lower:]')
 ARCH_SIMPLE=$(shell echo $(ARCH) | sed 's/x86_64/amd64/g')
 
-SHELLCHECK_VERSION=v0.7.0
+SHELLCHECK_VERSION=v0.7.1
 SHELLCHECK_DOWNLOAD_URL=https://github.com/koalaman/shellcheck/releases/download/$(SHELLCHECK_VERSION)/shellcheck-$(SHELLCHECK_VERSION).$(PLATFORM).$(ARCH).tar.xz
 SHELLCHECK_TAR_PATH=shellcheck-$(SHELLCHECK_VERSION)/shellcheck
 

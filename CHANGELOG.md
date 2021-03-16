@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix shellcheck download in Makefile
+- Upgrade shellcheck from v0.7.0 to v0.7.1 and fix new lint errors
 
 ## 0.8.0 - 2019-12-24
 
