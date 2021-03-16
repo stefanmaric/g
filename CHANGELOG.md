@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix shellcheck download in Makefile
 
 ## 0.8.0 - 2019-12-24
 
