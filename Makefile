@@ -8,7 +8,7 @@ SHELLCHECK_VERSION=v0.7.1
 SHELLCHECK_DOWNLOAD_URL=https://github.com/koalaman/shellcheck/releases/download/$(SHELLCHECK_VERSION)/shellcheck-$(SHELLCHECK_VERSION).$(PLATFORM).$(ARCH).tar.xz
 SHELLCHECK_TAR_PATH=shellcheck-$(SHELLCHECK_VERSION)/shellcheck
 
-SHFMT_VERSION=3.0.0
+SHFMT_VERSION=3.2.4
 SHFMT_DOWNLOAD_URL=https://github.com/mvdan/sh/releases/download/v$(SHFMT_VERSION)/shfmt_v$(SHFMT_VERSION)_$(PLATFORM)_$(ARCH_SIMPLE)
 
 .PHONY: prepare
