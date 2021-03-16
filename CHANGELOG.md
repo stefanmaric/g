@@ -5,6 +5,7 @@
 - Fix shellcheck download in Makefile
 - Upgrade shellcheck from v0.7.0 to v0.7.1 and fix new lint errors
 - Upgrade shfmt from v3.0.0 to v3.2.4, no format changes introduced
+- Introduce a Github Actions workflow file with lint only for now
 
 ## 0.8.0 - 2019-12-24
 

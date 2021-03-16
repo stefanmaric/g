@@ -1,0 +1,21 @@
+name: Validate
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    name: Lint code base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache dev dependencies
+        uses: actions/cache@v2
+        with:
+          path: ./.tmp
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('./Makefile') }}
+
+      - name: Lint with shellcheck
+        run: make lint
