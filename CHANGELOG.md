@@ -7,6 +7,7 @@
 - Upgrade shfmt from v3.0.0 to v3.2.4, no format changes introduced
 - Introduce a Github Actions workflow file with lint only for now
 - Fix g breaking on missing $TERM var in non-interactive systems
+- Add basic tests to the Github Actions workflow
 
 ## 0.8.0 - 2019-12-24
 

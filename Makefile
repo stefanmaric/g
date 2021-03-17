@@ -16,12 +16,12 @@ prepare: .tmp/shellcheck .tmp/shfmt
 
 .PHONY: lint
 lint: prepare
-	@./.tmp/shellcheck bin/*
-	@./.tmp/shfmt -d bin/*
+	@./.tmp/shellcheck bin/* mocks/*
+	@./.tmp/shfmt -d bin/* mocks/*
 
 .PHONY: format
 format: prepare
-	@./.tmp/shfmt -w bin/*
+	@./.tmp/shfmt -w bin/* mocks/*
 
 .tmp/shellcheck:
 	@echo "Downloading shellcheck"
