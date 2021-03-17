@@ -52,7 +52,7 @@ if [ ! -t 1 ]; then
   NO_COLOR=true
 fi
 
-case $TERM in
+case ${TERM:-""} in
   "xterm"*) ;;
   "screen"*) ;;
   *) NO_COLOR=true ;;
