@@ -7,6 +7,7 @@
 - Tweak docs, guidelines, and configs to make it easier to contribute
 - Format all documents with Prettier for consistency
 - Add Github template for BUG reports
+- Update screencast with more recent version of g
 
 ## 0.8.1 - 2021-03-17
 

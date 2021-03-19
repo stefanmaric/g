@@ -2,7 +2,7 @@
 
 Simple go version manager, gluten-free.
 
-<div align="center"><img src="screencast.gif" alt="screencast"></div>
+<div align="center"><img src="screencast.webp" alt="screencast"></div>
 
 ## Why?
 
