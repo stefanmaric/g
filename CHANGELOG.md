@@ -6,6 +6,7 @@
 - Add support for darwin-arm64 (M1 chips) (#20, thanks @joelanford)
 - Tweak docs, guidelines, and configs to make it easier to contribute
 - Format all documents with Prettier for consistency
+- Add Github template for BUG reports
 
 ## 0.8.1 - 2021-03-17
 
