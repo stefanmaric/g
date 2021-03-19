@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.9.0 - 2021-03-19
+
 - Improve switching Go versions performance to nearly instant (#19, thanks @jimeh)
 - Add support for darwin-arm64 (M1 chips) (#20, thanks @joelanford)
 - Tweak docs, guidelines, and configs to make it easier to contribute
