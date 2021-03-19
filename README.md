@@ -219,7 +219,7 @@ Then open your shell config file with your text editor of choice and look of for
 # tcsh
 ~/.tcshrc
 
-# For ash for dash, check your $ENV var
+# For ash and dash, check your $ENV var
 echo $ENV
 ```
 
@@ -228,7 +228,7 @@ At this point you would have removed `g` and `go` entirely.
 
 ## TODO
 
-- [ ] Improve docs a bit more
+- [x] Improve docs a bit more
 - [x] Make `g` and `g-install` POSIX compliant
 - [x] Add support for more shells
 - [x] Warn users they already have a golang installation when using `g-install`
@@ -239,9 +239,10 @@ At this point you would have removed `g` and `go` entirely.
 - [x] Make the `self-upgrade` command throw if `g` was not installed in the common way
 - [ ] Add a `complete` command that generates completions for the supported shells
     - [ ] And have `g-install` setup the shells to call this command for completions
-- [ ] Explore feature to configure shells to autoload go versions based on a project file
-- [ ] Test it on diff platforms
-- [ ] Crete a test setup with docker and Github actions
+- [ ] Explore feature to configure shells to autoload go versions based on mod.go
+- [x] Test it on diff platforms
+- [x] Crete a test setup with ~docker and~ Github actions
+- [ ] Add more tests
 
 
 ## The alternatives (and why I prefer `g`)

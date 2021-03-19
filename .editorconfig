@@ -23,3 +23,9 @@ shell_variant = posix
 binary_next_line = true
 switch_case_indent = true
 space_redirects = true
+
+[mocks/*]
+shell_variant = posix
+binary_next_line = true
+switch_case_indent = true
+space_redirects = true
