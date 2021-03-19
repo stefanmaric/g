@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# POSIX shell doesn't support errtrace nor pipefail.
+
+# Exit on error. Append "|| true" if you expect an error.
+set -o errexit
+# Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR.
+set -o nounset
+
+BASE_DIR="$(dirname -- "$0")"
+G_URL="https://git.io/g-bin"
+G_LOCATION="$BASE_DIR/../bin/g"
+INSTALL_URL="https://git.io/g-install"
+INSTALL_LOCATION="$BASE_DIR/../bin/install"
+
+for item in "$@"; do
+  if [ "$item" = "$G_URL" ]; then
+    cat "$G_LOCATION"
+    return
+  elif [ "$item" = "$INSTALL_URL" ]; then
+    cat "$INSTALL_LOCATION"
+    return
+  fi
+done
+
+command "${REAL_WGET:?}" "$@"

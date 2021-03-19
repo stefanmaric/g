@@ -307,7 +307,7 @@ g_alias_defined() {
   alias_already_used=false
 
   for shell in $SELECTED_SHELLS; do
-    if exists $shell "$1"; then
+    if exists "$shell" "$1"; then
       alias_already_used=true
       G_ALIAS_USED_IN_SHELL="$shell"
     fi

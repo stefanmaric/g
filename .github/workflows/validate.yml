@@ -1,0 +1,59 @@
+name: Validate
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    name: Lint code base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache dev dependencies
+        uses: actions/cache@v2
+        with:
+          path: ./.tmp
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('./Makefile') }}
+
+      - name: Lint with shellcheck
+        run: make lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -i {0}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Mock cURL and wget
+        run: |
+          echo "REAL_CURL=$(which curl)" >> $GITHUB_ENV
+          echo "REAL_WGET=$(which wget)" >> $GITHUB_ENV
+          echo "$(pwd)/mocks/" >> $GITHUB_PATH
+
+      - name: Install g using g-install with default options
+        run: curl -sSL https://git.io/g-install | sh -s -- -y bash
+
+      - name: Verify environment variables
+        run: test ! -z "${GOROOT?}" && test ! -z "${GOPATH?}"
+
+      - name: Verify g installation
+        run: g --version
+
+      - name: Verify go installation
+        run: go version
+
+      - name: Make sure it is the go binary installed by g
+        run: test "$(which go)" = "$GOPATH/bin/go"
+
+      - name: Make sure g can switch versions
+        run: g install 1.14.15 && go version | grep -1 "go1.14.15"
+
+      - name: Make sure g can self-upgrade
+        run: SHELL="$(which bash)" g self-upgrade
