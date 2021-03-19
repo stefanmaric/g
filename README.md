@@ -10,31 +10,28 @@ Existing version managers build go from source, have too many dependencies, poll
 
 `g` is inspired by [tj/n](https://github.com/tj/n) - which I have contributed to in the past - and borrows some of its code.
 
-
 ## Features
 
-* Run any go version on demand.
-* Single portable shell script that ideally lives where your go binaries live.
-* Works no matter what shell you use as long as `$GOPATH` and `$GOROOT` are exported which...
-* ...is idiomatic to `go` and not specific to `g`.
-* No need to `source` functions in your shell config.
-* Downloads pre-built binaries so it is fast and...
-* ...requires no git, no mercurial, no gcc, no xcode, etc.
-* `curl` and `wget` first-class support alike.
-* Colorful UI and interactive but safe to pipe and use in automated scripts.
-* self-upgrade command to keep up-to-date.
-* Option to get go beta versions.
-* Get started in golang with a single line using the install script.
-* The install script detects name collisions and helps you set an alternative name.
-
+- Run any go version on demand.
+- Single portable shell script that ideally lives where your go binaries live.
+- Works no matter what shell you use as long as `$GOPATH` and `$GOROOT` are exported which...
+- ...is idiomatic to `go` and not specific to `g`.
+- No need to `source` functions in your shell config.
+- Downloads pre-built binaries so it is fast and...
+- ...requires no git, no mercurial, no gcc, no xcode, etc.
+- `curl` and `wget` first-class support alike.
+- Colorful UI and interactive but safe to pipe and use in automated scripts.
+- self-upgrade command to keep up-to-date.
+- Option to get go beta versions.
+- Get started in golang with a single line using the install script.
+- The install script detects name collisions and helps you set an alternative name.
 
 ## Requirements
 
-* macOS, Linux or BSD environment. [Bash for Windows (WSL)](https://docs.microsoft.com/en-us/windows/wsl/about) is supported as well.
-* Either [`curl`](https://en.wikipedia.org/wiki/CURL) or [`wget`](https://en.wikipedia.org/wiki/Wget), check with `curl -V` or `wget -V` respectively.
+- macOS, Linux or BSD environment. [Bash for Windows (WSL)](https://docs.microsoft.com/en-us/windows/wsl/about) is supported as well.
+- Either [`curl`](https://en.wikipedia.org/wiki/CURL) or [`wget`](https://en.wikipedia.org/wiki/Wget), check with `curl -V` or `wget -V` respectively.
 
 Not strictly necessary, but highly recommended, to completely remove any previous go installation — just to prevent any weird outcome.
-
 
 ## Single-line Installation
 
@@ -62,13 +59,13 @@ Then you will prompted to install the latest version of go; you can skip this st
 
 The install script currently supports the following shells:
 
-* bash
-* zsh
-* fish
-* ash
-* dash
-* csh
-* tcsh
+- bash
+- zsh
+- fish
+- ash
+- dash
+- csh
+- tcsh
 
 That doesn't mean you cannot use `g` with other shells, just proceed with the [manual installation](#manual-installation).
 
@@ -130,11 +127,9 @@ curl -sSL https://git.io/g-install | sh -s
 3. Give the script execution rights with `chmod +x $GOPATH/bin/g`.
 4. Restart your shell session to make sure the env variables are loaded.
 
-
 ## Upgrading
 
 `g` includes a `self-upgrade` command you can run to get the latest version of `g`. This command simply runs the install script once again.
-
 
 ## Usage
 
@@ -225,7 +220,6 @@ echo $ENV
 
 At this point you would have removed `g` and `go` entirely.
 
-
 ## TODO
 
 - [x] Improve docs a bit more
@@ -233,54 +227,50 @@ At this point you would have removed `g` and `go` entirely.
 - [x] Add support for more shells
 - [x] Warn users they already have a golang installation when using `g-install`
 - [x] Use better naming for `g install <version>`, maybe `use` or `set`. See #8
-    - [x] Use `install` only for install and remove the `--download` option
+  - [x] Use `install` only for install and remove the `--download` option
 - [x] Handle the case when `g` already exists, mainly `zsh` with `oh-my-zsh`
-    - [x] Make it so `g-install` offers the user to setup an alternative alias for `g`
+  - [x] Make it so `g-install` offers the user to setup an alternative alias for `g`
 - [x] Make the `self-upgrade` command throw if `g` was not installed in the common way
 - [ ] Add a `complete` command that generates completions for the supported shells
-    - [ ] And have `g-install` setup the shells to call this command for completions
+  - [ ] And have `g-install` setup the shells to call this command for completions
 - [ ] Explore feature to configure shells to autoload go versions based on mod.go
 - [x] Test it on diff platforms
 - [x] Crete a test setup with ~docker and~ Github actions
 - [ ] Add more tests
 
-
 ## The alternatives (and why I prefer `g`)
 
-* [moovweb/gvm](https://github.com/moovweb/gvm)
-    - Too many features.
-    - Builds from source, i.e, requires gcc, make, xcode, etc.
-    - Requires git and mercurial.
-    - Requires bootstrapping, i.e., install go 1.4 first.
-    - Specific to a shell, i.e., doesn't work with fishshell.
-* [syndbg/goenv](https://github.com/syndbg/goenv)
-    - Too many features and weird DX.
-    - Uses an hard-coded list of go versions...
-    - ...thus you have to upgrade `goenv` before installing a new version of go.
-    - Adds a lot to your env and PATH.
-* [hit9/oo](https://github.com/hit9/oo)
-    - Pretty much same as `gvm`.
-* [asdf-golang](https://github.com/kennyp/asdf-golang)
-    - Depends on [asdf](https://github.com/asdf-vm/asdf).
-* [andrewkroh/gvm](https://github.com/andrewkroh/gvm)
-    - Bash, batch and powershell support only.
-    - Cumbersome to use.
-* [MakeNowJust/govm](https://github.com/MakeNowJust/govm)
-    - Builds from source.
-    - Requires python 2.
-
+- [moovweb/gvm](https://github.com/moovweb/gvm)
+  - Too many features.
+  - Builds from source, i.e, requires gcc, make, xcode, etc.
+  - Requires git and mercurial.
+  - Requires bootstrapping, i.e., install go 1.4 first.
+  - Specific to a shell, i.e., doesn't work with fishshell.
+- [syndbg/goenv](https://github.com/syndbg/goenv)
+  - Too many features and weird DX.
+  - Uses an hard-coded list of go versions...
+  - ...thus you have to upgrade `goenv` before installing a new version of go.
+  - Adds a lot to your env and PATH.
+- [hit9/oo](https://github.com/hit9/oo)
+  - Pretty much same as `gvm`.
+- [asdf-golang](https://github.com/kennyp/asdf-golang)
+  - Depends on [asdf](https://github.com/asdf-vm/asdf).
+- [andrewkroh/gvm](https://github.com/andrewkroh/gvm)
+  - Bash, batch and powershell support only.
+  - Cumbersome to use.
+- [MakeNowJust/govm](https://github.com/MakeNowJust/govm)
+  - Builds from source.
+  - Requires python 2.
 
 ## Contributing
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md). ♥
 
-
 ## Acknowledgments
 
-* [Every contributor to this project](https://github.com/stefanmaric/g/graphs/contributors).
-* The [`n` project](https://github.com/tj/n), which  `g` is inspired by and based on.
-* The [`n-install` project](https://github.com/mklement0/n-install), which `g` is also based on.
-
+- [Every contributor to this project](https://github.com/stefanmaric/g/graphs/contributors).
+- The [`n` project](https://github.com/tj/n), which `g` is inspired by and based on.
+- The [`n-install` project](https://github.com/mklement0/n-install), which `g` is also based on.
 
 ## License
 

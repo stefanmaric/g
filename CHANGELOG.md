@@ -5,6 +5,7 @@
 - Improve switching Go versions performance to nearly instant (#19, thanks @jimeh)
 - Add support for darwin-arm64 (M1 chips) (#20, thanks @joelanford)
 - Tweak docs, guidelines, and configs to make it easier to contribute
+- Format all documents with Prettier for consistency
 
 ## 0.8.1 - 2021-03-17
 
@@ -34,7 +35,7 @@
 - Make self-upgrade throw if g was not installed via g-install
 - Add alias collision detection and setup helper (#11, thanks @alvinmatias69)
 - Add `download` and `set` commands (#12, thanks @feualpha)
-  * BREAKING: Remove the `--download` option
+  - BREAKING: Remove the `--download` option
 - Add Makefile with lint and format targets for better DX
 - Fix shellcheck lint errors
 - Format source code using make format
@@ -88,7 +89,7 @@
 - Fix activation error on MacOS because of `cp` and `ln` long params
 - Fix unbound var error on install script on MacOS
 - Exclude beta version from version list
-  * Beta versions can still be installed if you provide the version, e.g. `1.11beta2`
+  - Beta versions can still be installed if you provide the version, e.g. `1.11beta2`
 
 ## 0.2.0 - 2018-04-22
 
