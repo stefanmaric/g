@@ -122,7 +122,7 @@ curl -sSL https://git.io/g-install | sh -s
 
 ## Manual Installation
 
-1. Make sure to export the `$GOPATH` & `$GOROOT` environment variables and add `$GOPATH/bin` to your `PATH`.
+1. Make sure to export the `$GOPATH` & `$GOROOT` environment variables and add `$GOPATH/bin` to your `PATH`. Alternatively, if you already have go installed and want to switch to using `g`, set `GOPATH` and `GOROOT` using `go env -w`.
 2. Grab a copy of the [`./bin/g`](./bin/g) script and put it anywhere available in your `PATH` — inside `$GOPATH/bin/` is a good option.
 3. Give the script execution rights with `chmod +x $GOPATH/bin/g`.
 4. Restart your shell session to make sure the env variables are loaded.

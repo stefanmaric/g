@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Use `go env` as fallback for `GOPATH` and `GOROOT`
 
 ## 0.9.0 - 2021-03-19
 
