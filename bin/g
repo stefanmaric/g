@@ -778,6 +778,18 @@ self_upgrade() {
 }
 
 #
+# Use go env as fallback for explicitly defined GOPATH and GOROOT
+#
+
+if [ -z "${GOPATH:-}" ] && command -v go > /dev/null; then
+  GOPATH=$(go env GOPATH)
+fi
+
+if [ -z "${GOROOT:-}" ] && command -v go > /dev/null; then
+  GOROOT=$(go env GOROOT)
+fi
+
+#
 # Make sure required go env vars are available.
 #
 
