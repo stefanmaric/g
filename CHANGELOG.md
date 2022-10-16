@@ -4,6 +4,7 @@
 
 
 ## 0.9.0 - 2021-03-19
+- Fix the grep warning: stray \ before " with the latest releases of grep
 
 - Improve switching Go versions performance to nearly instant (#19, thanks @jimeh)
 - Add support for darwin-arm64 (M1 chips) (#20, thanks @joelanford)

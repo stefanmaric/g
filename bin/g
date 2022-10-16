@@ -346,7 +346,7 @@ get_all_remote_versions() {
   fi
 
   download_file 2> /dev/null "https://go.googlesource.com/go/+refs" \
-    | grep -E -o '\"/go/\+/refs/tags/go.+?\"' \
+    | grep -E -o '"/go/\+/refs/tags/go.+?"' \
     | grep -E -o "$pattern" \
     | tr -d 'go' \
     | sort -k 1,1n -k 2,2n -k 3,3n -t . \
