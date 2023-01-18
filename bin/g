@@ -69,6 +69,8 @@ display_g_version() {
 display_help() {
   cat <<- EOF
 
+  Simple go version manager, gluten-free.
+
   Usage: g [COMMAND] [options] [args]
 
   Commands:
@@ -98,6 +100,7 @@ display_help() {
     -a, --arch                Override system architecture
     -u, --unstable            Include unstable versions in list
 
+  Visit https://github.com/stefanmaric/g to learn more about g.
 EOF
 }
 

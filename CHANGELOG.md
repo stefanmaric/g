@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add description and website to help command
 
 ## 0.9.1 - 2022-10-23
 
