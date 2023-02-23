@@ -828,7 +828,7 @@ if [ $# -eq 0 ]; then
 else
   while test $# -ne 0; do
     case $1 in
-      install | set | download | run | remove | prune | which | list | list-all | self-upgrade) __cmd=$1 ;;
+      install | set | use | download | run | remove | prune | which | list | list-all | self-upgrade) __cmd=$1 ;;
       -h | --help | help)
         display_help
         exit
@@ -863,7 +863,7 @@ else
   case $__cmd in
     install) install_version $__cmd_args ;;
     download) download_version $__cmd_args ;;
-    set) set_version $__cmd_args ;;
+    set | use) set_version $__cmd_args ;;
     run) run_with_version $__cmd_args ;;
     remove) remove_versions $__cmd_args ;;
     prune) prune_versions ;;
