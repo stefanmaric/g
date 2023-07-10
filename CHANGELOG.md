@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.10.0 - 2023-06-10
+
 - Add description and website to help command
 - Fix Github Actions tests workflow on newer versions of Ubuntu
 - Fix g not activating selected version when system one is available
