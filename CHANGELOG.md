@@ -4,6 +4,7 @@
 
 - Add description and website to help command
 - Fix Github Actions tests workflow on newer versions of Ubuntu
+- Fix g not activating selected version when system one is available
 
 ## 0.9.1 - 2022-10-23
 

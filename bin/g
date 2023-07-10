@@ -588,24 +588,22 @@ set_version() {
     error_and_abort "Version $version is not available. Use 'g install $version' to install it."
   fi
 
-  if [ "$version" != "$active" ]; then
-    if [ ! -e "$dir/g.lock" ]; then
-      for file in "$dir/"*; do
-        if [ -L "${GOROOT:?}/$(basename "$file")" ]; then
-          rm "${GOROOT:?}/$(basename "$file")"
-        elif [ -e "${GOROOT:?}/$(basename "$file")" ]; then
-          # enable seamless upgrade to symlink behavior
-          rm -rf "${GOROOT:?}/$(basename "$file")"
-        fi
-        ln -sf "$file" "${GOROOT:?}/$(basename "$file")"
-      done
+  if [ ! -e "$dir/g.lock" ]; then
+    for file in "$dir/"*; do
+      if [ -L "${GOROOT:?}/$(basename "$file")" ]; then
+        rm "${GOROOT:?}/$(basename "$file")"
+      elif [ -e "${GOROOT:?}/$(basename "$file")" ]; then
+        # enable seamless upgrade to symlink behavior
+        rm -rf "${GOROOT:?}/$(basename "$file")"
+      fi
+      ln -sf "$file" "${GOROOT:?}/$(basename "$file")"
+    done
 
-      for file in "$dir/bin/"*; do
-        ln -sf "$GOROOT/bin/$(basename "$file")" "$GOPATH/bin/"
-      done
-    else
-      error_and_abort "version $version installation might be corrupted"
-    fi
+    for file in "$dir/bin/"*; do
+      ln -sf "$GOROOT/bin/$(basename "$file")" "$GOPATH/bin/"
+    done
+  else
+    error_and_abort "version $version installation might be corrupted"
   fi
 }
 
