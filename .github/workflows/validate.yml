@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -i {0}
+        shell: 'script -q -e -c "bash -i -eo pipefail {0}"'
 
     steps:
       - name: Checkout code
