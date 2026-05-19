@@ -162,6 +162,38 @@ curl -sSL https://git.io/g-install | sh -s
     -o, --os                  Override operating system
     -a, --arch                Override system architecture
     -u, --unstable            Include unstable versions in list
+    --archive-url             Override Go archive base URL
+```
+
+### Download mirrors
+
+By default, `g` reads Go release metadata from `https://go.dev/dl` and downloads
+archives from `https://dl.google.com/go`. You can override the archive download
+base URL with a command argument or environment variable. Command arguments take
+precedence over environment variables.
+
+```shell
+g install latest --archive-url https://dl.google.com/go
+```
+
+```shell
+export G_GO_ARCHIVE_URL=https://dl.google.com/go
+```
+
+Metadata is always read from the official Go download metadata endpoint.
+`--archive-url` and `G_GO_ARCHIVE_URL` only need to serve
+official Go archive filenames such as `go1.22.2.linux-amd64.tar.gz`.
+
+For example, to use the China-friendly official archive endpoint:
+
+```shell
+export G_GO_ARCHIVE_URL=https://golang.google.cn/dl
+```
+
+Or to use an archive-only mirror:
+
+```shell
+export G_GO_ARCHIVE_URL=https://mirrors.aliyun.com/golang
 ```
 
 ## Uninstall

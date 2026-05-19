@@ -43,8 +43,8 @@ NON_INTERACTIVE=false
 INCLUDE_UNSTABLE=false
 ARCH=
 OS=
-GO_METADATA_BASE_URL="https://go.dev/dl"
-GO_DOWNLOAD_BASE_URL="https://dl.google.com/go"
+GO_METADATA_URL="https://go.dev/dl"
+GO_ARCHIVE_URL=${G_GO_ARCHIVE_URL:-"https://dl.google.com/go"}
 
 #
 # Detect environment conditions.
@@ -101,6 +101,7 @@ display_help() {
     -o, --os                  Override operating system
     -a, --arch                Override system architecture
     -u, --unstable            Include unstable versions in list
+    --archive-url             Override Go archive base URL
 
   Visit https://github.com/stefanmaric/g to learn more about g.
 EOF
@@ -337,19 +338,41 @@ download_file() {
   fi
 }
 
+strip_trailing_slashes() {
+  value=$1
+
+  while [ "${value%/}" != "$value" ]; do
+    value=${value%/}
+  done
+
+  echo "$value"
+}
+
 #
 # Fetch Go download metadata and extract the fields g needs.
 #
 
 get_metadata() {
+  base_url=$(strip_trailing_slashes "$GO_METADATA_URL")
+
   if [ "${1:-}" = "all" ]; then
-    url="$GO_METADATA_BASE_URL/?mode=json&include=all"
+    url="$base_url/?mode=json&include=all"
   else
-    url="$GO_METADATA_BASE_URL/?mode=json"
+    url="$base_url/?mode=json"
   fi
 
-  download_file 2> /dev/null "$url"
+  metadata=$(download_file 2> /dev/null "$url") || error_and_abort "cannot fetch Go metadata from $url"
+
+  if ! echo "$metadata" | grep '^[[:space:]]*\[' > /dev/null; then
+    error_and_abort "invalid Go metadata from $url"
+  fi
+
+  echo "$metadata" | parse_metadata
 }
+
+#
+# Transform raw JSON from the go.dev/dl endpoint into lines of space-separated fields for easy querying.
+#
 
 parse_metadata() {
   awk '
@@ -549,7 +572,6 @@ get_all_remote_versions() {
   fi
 
   get_metadata all \
-    | parse_metadata \
     | metadata_versions \
     | grep -E "$pattern" \
     | sed 's/^go//' \
@@ -563,7 +585,6 @@ get_all_remote_versions() {
 
 get_latest_version() {
   get_metadata \
-    | parse_metadata \
     | metadata_versions \
     | sed 's/^go//' \
     | sed -n 1p
@@ -658,7 +679,7 @@ get_target() {
     arch=$ARCH
   fi
 
-  printf '%s %s\n' "$os" "$arch"
+  echo "$os $arch"
 }
 
 get_archive_filename() {
@@ -667,7 +688,6 @@ get_archive_filename() {
   arch=$3
 
   get_metadata all \
-    | parse_metadata \
     | metadata_archive_record "$version" "$os" "$arch" \
     | metadata_archive_filename
 }
@@ -687,10 +707,12 @@ get_tarball_url() {
   filename=$(get_archive_filename "$version" "$os" "$arch")
 
   if [ -z "$filename" ]; then
-    return 1
+    error_and_abort "invalid version $version"
   fi
 
-  echo "$GO_DOWNLOAD_BASE_URL/$filename"
+  base_url=$(strip_trailing_slashes "$GO_ARCHIVE_URL")
+
+  echo "$base_url/$filename"
 }
 
 #
@@ -874,10 +896,6 @@ download_version() {
   log_info "selected" "$version"
 
   url=$(get_tarball_url "$version")
-
-  if [ -z "$url" ]; then
-    error_and_abort "invalid version $version"
-  fi
 
   if ! is_url_ok "$url"; then
     error_and_abort "invalid version $version"
@@ -1087,6 +1105,10 @@ else
         ARCH=$1
         ;;
       -u | --unstable) INCLUDE_UNSTABLE=true ;;
+      --archive-url)
+        shift
+        GO_ARCHIVE_URL=$1
+        ;;
       --)
         __cmd_args="$__cmd_args $*"
         break
