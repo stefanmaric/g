@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Upgrade all dev dependencies and CI environment
+- Replace ad-hoc Github Actions based tests with sharness
 
 ## 0.10.0 - 2023-06-10
 

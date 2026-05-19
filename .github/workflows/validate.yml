@@ -26,37 +26,16 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: 'script -q -e -c "bash -i -eo pipefail {0}"'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Mock cURL and wget
-        run: |
-          echo "REAL_CURL=$(which curl)" >> $GITHUB_ENV
-          echo "REAL_WGET=$(which wget)" >> $GITHUB_ENV
-          echo "$(pwd)/mocks/" >> $GITHUB_PATH
+      - name: Cache dev dependencies
+        uses: actions/cache@v5
+        with:
+          path: ./.tmp
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('./Makefile') }}
 
-      - name: Install g using g-install with default options
-        run: curl -sSL https://git.io/g-install | sh -s -- -y bash
-
-      - name: Verify environment variables
-        run: test ! -z "${GOROOT?}" && test ! -z "${GOPATH?}"
-
-      - name: Verify g installation
-        run: g --version
-
-      - name: Verify go installation
-        run: go version
-
-      - name: Make sure it is the go binary installed by g
-        run: test "$(which go)" = "$GOPATH/bin/go"
-
-      - name: Make sure g can switch versions
-        run: g install 1.14.15 && go version | grep -1 "go1.14.15"
-
-      - name: Make sure g can self-upgrade
-        run: SHELL="$(which bash)" g self-upgrade
+      - name: Run tests with sharness
+        run: make test

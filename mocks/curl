@@ -16,10 +16,10 @@ INSTALL_LOCATION="$BASE_DIR/../bin/install"
 for item in "$@"; do
   if [ "$item" = "$G_URL" ]; then
     cat "$G_LOCATION"
-    return
+    exit 0
   elif [ "$item" = "$INSTALL_URL" ]; then
     cat "$INSTALL_LOCATION"
-    return
+    exit 0
   fi
 done
 

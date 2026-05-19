@@ -15,8 +15,11 @@ SHELLCHECK_TAR_PATH=shellcheck-$(SHELLCHECK_VERSION)/shellcheck
 SHFMT_VERSION=3.13.1
 SHFMT_DOWNLOAD_URL=https://github.com/mvdan/sh/releases/download/v$(SHFMT_VERSION)/shfmt_v$(SHFMT_VERSION)_$(PLATFORM)_$(SHFMT_ARCH)
 
+SHARNESS_VERSION=v1.2.1
+SHARNESS_DOWNLOAD_URL=https://raw.githubusercontent.com/felipec/sharness/$(SHARNESS_VERSION)/sharness.sh
+
 .PHONY: prepare
-prepare: .tmp/shellcheck .tmp/shfmt
+prepare: .tmp/shellcheck .tmp/shfmt .tmp/sharness.sh
 
 .PHONY: lint
 lint: prepare
@@ -26,6 +29,12 @@ lint: prepare
 .PHONY: format
 format: prepare
 	@./.tmp/shfmt -w bin/* mocks/*
+
+.PHONY: test
+test: prepare
+	@for test in tests/*.t; do \
+		SHARNESS_PATH=./.tmp/sharness.sh sh "$$test" || exit 1; \
+	done
 
 .tmp/shellcheck:
 	@echo "Downloading shellcheck"
@@ -46,4 +55,13 @@ format: prepare
 	@curl --fail --location --silent --show-error '$(SHFMT_DOWNLOAD_URL)' > .tmp/shfmt.tmp
 	@chmod +x .tmp/shfmt.tmp
 	@mv .tmp/shfmt.tmp .tmp/shfmt
+	@echo
+
+.tmp/sharness.sh:
+	@echo "Downloading sharness"
+	@echo
+	@mkdir -p .tmp
+	@rm -f .tmp/sharness.sh.tmp
+	@curl --fail --location --silent --show-error '$(SHARNESS_DOWNLOAD_URL)' > .tmp/sharness.sh.tmp
+	@mv .tmp/sharness.sh.tmp .tmp/sharness.sh
 	@echo

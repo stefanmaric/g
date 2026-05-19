@@ -20,9 +20,9 @@ Once you're ready to start coding:
 - Apply your changes.
 - Document your changes (README, --help content, etc) where necessary.
 - Update the [CHANGELOG](./CHANGELOG.md) describing your contributions.
-- Run `make lint` to check the code with `shellcheck` and run `make format` afterwards to style it with `shfmt`.
+- Run `make lint` to check the code with `shellcheck`, `make test` to run the smoke tests, and `make format` afterwards to style it with `shfmt`.
 
-Once you are done with your changes and cleared by `make lint` and `make format`:
+Once you are done with your changes and cleared by `make lint`, `make test`, and `make format`:
 
 - Commit with a meaningful message. See: [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/).
 - If your contribution is related to an existing issue, remember to reference the issue number.
