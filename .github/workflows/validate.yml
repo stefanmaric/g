@@ -2,6 +2,9 @@ name: Validate
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint code base
@@ -9,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Cache dev dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v5
         with:
           path: ./.tmp
           key: ${{ runner.os }}-dependencies-${{ hashFiles('./Makefile') }}
@@ -29,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Mock cURL and wget
         run: |

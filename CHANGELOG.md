@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Upgrade all dev dependencies and CI environment
 
 ## 0.10.0 - 2023-06-10
 
