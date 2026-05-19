@@ -4,6 +4,7 @@
 
 - Upgrade all dev dependencies and CI environment
 - Replace ad-hoc Github Actions based tests with sharness
+- Replace HTML parsing with Go metadata version discovery
 
 ## 0.10.0 - 2023-06-10
 

@@ -43,6 +43,8 @@ NON_INTERACTIVE=false
 INCLUDE_UNSTABLE=false
 ARCH=
 OS=
+GO_METADATA_BASE_URL="https://go.dev/dl"
+GO_DOWNLOAD_BASE_URL="https://dl.google.com/go"
 
 #
 # Detect environment conditions.
@@ -336,6 +338,204 @@ download_file() {
 }
 
 #
+# Fetch Go download metadata and extract the fields g needs.
+#
+
+get_metadata() {
+  if [ "${1:-}" = "all" ]; then
+    url="$GO_METADATA_BASE_URL/?mode=json&include=all"
+  else
+    url="$GO_METADATA_BASE_URL/?mode=json"
+  fi
+
+  download_file 2> /dev/null "$url"
+}
+
+parse_metadata() {
+  awk '
+    function print_record() {
+      if (filename != "") {
+        print "version=" current_version " stable=" stable " kind=" kind " os=" file_os " arch=" file_arch " filename=" filename " sha256=" sha256
+      }
+    }
+    function reset_file() {
+      filename = file_os = file_arch = kind = sha256 = ""
+    }
+    function set_value(value) {
+      if (value_key == "") {
+        return
+      }
+      if (depth == 2) {
+        if (value_key == "version") {
+          current_version = value
+        } else if (value_key == "stable") {
+          stable = value
+        }
+      } else if (depth == 4) {
+        if (value_key == "filename") {
+          filename = value
+        } else if (value_key == "os") {
+          file_os = value
+        } else if (value_key == "arch") {
+          file_arch = value
+        } else if (value_key == "kind") {
+          kind = value
+        } else if (value_key == "sha256") {
+          sha256 = value
+        }
+      }
+      value_key = ""
+    }
+    function token_string(value) {
+      if (value_key != "") {
+        set_value(value)
+      } else {
+        last_string = value
+      }
+    }
+    function token_colon() {
+      value_key = last_string
+      last_string = ""
+    }
+    function token_open(token) {
+      value_key = ""
+      last_string = ""
+      depth++
+      if (token == "{" && depth == 4) {
+        reset_file()
+      }
+    }
+    function token_close(token) {
+      if (token == "}" && depth == 4) {
+        print_record()
+      }
+      depth--
+    }
+    function read_string(input, start, end, value, char, escaped) {
+      value = ""
+      escaped = 0
+      for (end = start + 1; end <= length(input); end++) {
+        char = substr(input, end, 1)
+        if (escaped) {
+          value = value char
+          escaped = 0
+        } else if (char == "\\") {
+          escaped = 1
+        } else if (char == "\"") {
+          token_string(value)
+          return end
+        } else {
+          value = value char
+        }
+      }
+      return end
+    }
+    function read_literal(input, start, literal) {
+      literal = substr(input, start)
+      if (literal ~ /^true/) {
+        set_value("true")
+        return start + 3
+      }
+      if (literal ~ /^false/) {
+        set_value("false")
+        return start + 4
+      }
+      if (literal ~ /^null/) {
+        set_value("")
+        return start + 3
+      }
+      return start
+    }
+    function read_number(input, start, end, char) {
+      value_key = ""
+      for (end = start + 1; end <= length(input); end++) {
+        char = substr(input, end, 1)
+        if (char !~ /[0-9.eE+-]/) {
+          return end - 1
+        }
+      }
+      return end
+    }
+    {
+      input = $0 "\n"
+      for (pos = 1; pos <= length(input); pos++) {
+        char = substr(input, pos, 1)
+        if (char ~ /[[:space:]]/) {
+          continue
+        } else if (char == "\"") {
+          pos = read_string(input, pos)
+        } else if (char == ":") {
+          token_colon()
+        } else if (char == "{" || char == "[") {
+          token_open(char)
+        } else if (char == "}" || char == "]") {
+          token_close(char)
+        } else if (char == "t" || char == "f" || char == "n") {
+          pos = read_literal(input, pos)
+        } else if (char ~ /[-0-9]/) {
+          pos = read_number(input, pos)
+        }
+      }
+    }
+  '
+}
+
+metadata_field() {
+  field=$1
+  record=$2
+
+  # The unquoted expansion here is intentional: metadata records are
+  # space-separated key=value fields whose values do not contain spaces.
+  # shellcheck disable=SC2086
+  for item in $record; do
+    case $item in
+      "$field"=*)
+        echo "${item#*=}"
+        return
+        ;;
+    esac
+  done
+}
+
+metadata_versions() {
+  while IFS= read -r record; do
+    metadata_field version "$record"
+  done
+}
+
+metadata_archive_record() {
+  version=$1
+  os=$2
+  arch=$3
+
+  while IFS= read -r record; do
+    record_version=$(metadata_field version "$record")
+    record_kind=$(metadata_field kind "$record")
+    record_os=$(metadata_field os "$record")
+    record_arch=$(metadata_field arch "$record")
+
+    if [ "$record_version" = "$version" ] && [ "$record_kind" = "archive" ] && [ "$record_os" = "$os" ] && [ "$record_arch" = "$arch" ]; then
+      echo "$record"
+      break
+    fi
+  done
+}
+
+metadata_archive_filename() {
+  while IFS= read -r record; do
+    metadata_field filename "$record"
+    break
+  done
+}
+
+metadata_archive_sha256() {
+  while IFS= read -r record; do
+    metadata_field sha256 "$record"
+    break
+  done
+}
+
+#
 # Fetch download page to get all remote version.
 #
 
@@ -343,15 +543,16 @@ get_all_remote_versions() {
   pattern=
 
   if [ "$INCLUDE_UNSTABLE" = true ]; then
-    pattern='go[[:digit:]]+(\.[[:alnum:]]+)+\b'
+    pattern='^go[[:digit:]]+(\.[[:alnum:]]+)+$'
   else
-    pattern='go[[:digit:]]+(\.[[:digit:]]+)+\b'
+    pattern='^go[[:digit:]]+(\.[[:digit:]]+)+$'
   fi
 
-  download_file 2> /dev/null "https://go.googlesource.com/go/+refs" \
-    | grep -E -o '"/go/\+/refs/tags/go.+?"' \
-    | grep -E -o "$pattern" \
-    | tr -d 'go' \
+  get_metadata all \
+    | parse_metadata \
+    | metadata_versions \
+    | grep -E "$pattern" \
+    | sed 's/^go//' \
     | sort -k 1,1n -k 2,2n -k 3,3n -t . \
     | uniq
 }
@@ -361,7 +562,11 @@ get_all_remote_versions() {
 #
 
 get_latest_version() {
-  get_all_remote_versions | tail -n1
+  get_metadata \
+    | parse_metadata \
+    | metadata_versions \
+    | sed 's/^go//' \
+    | sed -n 1p
 }
 
 #
@@ -416,11 +621,10 @@ get_prev_installed_version() {
 }
 
 #
-# Assemble the tarball url for a given <version>.
+# Compute the target OS and Architecture for the given environment and options.
 #
 
-get_tarball_url() {
-  version=$1
+get_target() {
   os=
   arch=
 
@@ -454,7 +658,39 @@ get_tarball_url() {
     arch=$ARCH
   fi
 
-  echo "https://dl.google.com/go/go${version}.${os}-${arch}.tar.gz"
+  printf '%s %s\n' "$os" "$arch"
+}
+
+get_archive_filename() {
+  version=go$1
+  os=$2
+  arch=$3
+
+  get_metadata all \
+    | parse_metadata \
+    | metadata_archive_record "$version" "$os" "$arch" \
+    | metadata_archive_filename
+}
+
+#
+# Assemble the tarball url for a given <version>.
+#
+
+get_tarball_url() {
+  version=$1
+
+  # The unquoted expansion here is intentional: get_target returns two fields.
+  # shellcheck disable=SC2046
+  set -- $(get_target)
+  os=$1
+  arch=$2
+  filename=$(get_archive_filename "$version" "$os" "$arch")
+
+  if [ -z "$filename" ]; then
+    return 1
+  fi
+
+  echo "$GO_DOWNLOAD_BASE_URL/$filename"
 }
 
 #
@@ -638,6 +874,10 @@ download_version() {
   log_info "selected" "$version"
 
   url=$(get_tarball_url "$version")
+
+  if [ -z "$url" ]; then
+    error_and_abort "invalid version $version"
+  fi
 
   if ! is_url_ok "$url"; then
     error_and_abort "invalid version $version"

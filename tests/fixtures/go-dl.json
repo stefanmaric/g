@@ -1,0 +1,65 @@
+[
+ {
+  "version": "go1.22.2",
+  "stable": true,
+  "files": [
+   {
+    "filename": "go1.22.2.src.tar.gz",
+    "os": "",
+    "arch": "",
+    "version": "go1.22.2",
+    "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "size": 1,
+    "kind": "source"
+   },
+   {
+    "filename": "go1.22.2.darwin-arm64.tar.gz",
+    "os": "darwin",
+    "arch": "arm64",
+    "version": "go1.22.2",
+    "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "size": 1,
+    "kind": "archive"
+   },
+   {
+    "filename": "go1.22.2.linux-amd64.tar.gz",
+    "os": "linux",
+    "arch": "amd64",
+    "version": "go1.22.2",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "size": 1,
+    "kind": "archive"
+   }
+  ]
+ },
+ {
+  "version": "go1.22.1",
+  "stable": true,
+  "files": [
+   {
+    "filename": "go1.22.1.linux-amd64.tar.gz",
+    "os": "linux",
+    "arch": "amd64",
+    "version": "go1.22.1",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "size": 1,
+    "kind": "archive"
+   }
+  ]
+ },
+ {
+  "version": "go1.23rc1",
+  "stable": false,
+  "files": [
+   {
+    "filename": "go1.23rc1.linux-amd64.tar.gz",
+    "os": "linux",
+    "arch": "amd64",
+    "version": "go1.23rc1",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "size": 1,
+    "kind": "archive"
+   }
+  ]
+ }
+]

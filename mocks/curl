@@ -12,6 +12,18 @@ G_URL="https://git.io/g-bin"
 G_LOCATION="$BASE_DIR/../bin/g"
 INSTALL_URL="https://git.io/g-install"
 INSTALL_LOCATION="$BASE_DIR/../bin/install"
+METADATA_URL="https://go.dev/dl/?mode=json"
+METADATA_ALL_URL="https://go.dev/dl/?mode=json&include=all"
+METADATA_LOCATION="$BASE_DIR/../tests/fixtures/go-dl.json"
+ARCHIVE_URL="https://dl.google.com/go/go1.22.2.linux-amd64.tar.gz"
+
+is_head=false
+
+for item in "$@"; do
+  if [ "$item" = "--head" ]; then
+    is_head=true
+  fi
+done
 
 for item in "$@"; do
   if [ "$item" = "$G_URL" ]; then
@@ -19,6 +31,16 @@ for item in "$@"; do
     exit 0
   elif [ "$item" = "$INSTALL_URL" ]; then
     cat "$INSTALL_LOCATION"
+    exit 0
+  elif [ "$item" = "$METADATA_URL" ] || [ "$item" = "$METADATA_ALL_URL" ]; then
+    cat "$METADATA_LOCATION"
+    exit 0
+  elif [ "$item" = "$ARCHIVE_URL" ]; then
+    if [ "$is_head" = true ]; then
+      printf 'HTTP/1.1 200 OK\n'
+    else
+      cat "${MOCK_ARCHIVE:?}"
+    fi
     exit 0
   fi
 done
