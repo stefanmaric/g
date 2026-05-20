@@ -13,6 +13,7 @@
 - Suppress shell alias stderr logs during install
 - Add common command aliases
 - Fix tcsh shell detection during install
+- Add missing items to gitignore
 
 ## 0.10.0 - 2023-06-10
 
