@@ -367,6 +367,35 @@ verify_sha256() {
   fi
 }
 
+normalize_arch() {
+  case "$(echo "$1" | tr '[:upper:]' '[:lower:]')" in
+    *i686* | *i386*) echo "386" ;;
+    *x86_64* | *x86-64*) echo "amd64" ;;
+    *armv6l* | *armv7l*) echo "armv6l" ;;
+    *arm64* | *aarch64* | *armv8*) echo "arm64" ;;
+    *ppc64*) echo "ppc64le" ;;
+    *s390*) echo "s390x" ;;
+  esac
+}
+
+binary_matches_arch() {
+  target_binary="$1"
+  requested_arch="$2"
+
+  if ! command -v file > /dev/null; then
+    return 1
+  fi
+
+  file_description=$(file "$target_binary" 2> /dev/null)
+  installed_arch=$(normalize_arch "$file_description")
+
+  if [ "$installed_arch" = "$requested_arch" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 strip_trailing_slashes() {
   value=$1
 
@@ -669,37 +698,30 @@ get_prev_installed_version() {
 #
 
 get_target() {
-  os=
   arch=
-
-  case "$(uname | tr '[:upper:]' '[:lower:]')" in
-    linux*) os=linux ;;
-    darwin*) os=darwin ;;
-    freebsd*) os=freebsd ;;
-  esac
-
-  # The use of uname -m instead of -a is intended since coreutils' uname will include "i386" on its
-  # output in MacOS even if the system is 64bits.
-  # This is probably related to how darwin flags the system to differentiate ppc from intel.
-  #
-  # See: https://github.com/stefanmaric/g/pull/15
-  # See: https://unix.stackexchange.com/questions/518318/what-does-i386-mean-on-macos-mojave
-  # See: https://bug-coreutils.gnu.narkive.com/GMke0VIF/uname-problem-on-mac-os-x
-  case "$(uname -m | tr '[:upper:]' '[:lower:]')" in
-    *i686* | *i386*) arch=386 ;;
-    *x86_64*) arch=amd64 ;;
-    *armv6l* | *armv7l*) arch=armv6l ;;
-    *arm64* | *aarch64* | *armv8*) arch=arm64 ;;
-    *ppc64*) arch=ppc64le ;;
-    *s390*) arch=s390x ;;
-  esac
+  os=
 
   if [ -n "$OS" ]; then
     os=$OS
+  else
+    case "$(uname | tr '[:upper:]' '[:lower:]')" in
+      linux*) os=linux ;;
+      darwin*) os=darwin ;;
+      freebsd*) os=freebsd ;;
+    esac
   fi
 
   if [ -n "$ARCH" ]; then
     arch=$ARCH
+  else
+    # The use of uname -m instead of -a is intended since coreutils' uname will include "i386" on its
+    # output in MacOS even if the system is 64bits.
+    # This is probably related to how darwin flags the system to differentiate ppc from intel.
+    #
+    # See: https://github.com/stefanmaric/g/pull/15
+    # See: https://unix.stackexchange.com/questions/518318/what-does-i386-mean-on-macos-mojave
+    # See: https://bug-coreutils.gnu.narkive.com/GMke0VIF/uname-problem-on-mac-os-x
+    arch="$(normalize_arch "$(uname -m)")"
   fi
 
   echo "$os $arch"
@@ -864,8 +886,13 @@ install_version() {
   dir="$GO_VERSIONS_DIR/$version"
 
   if [ -d "$dir" ]; then
-    set_version "$version"
-    exit
+    if [ -n "$ARCH" ] && ! binary_matches_arch "$dir/bin/go" "$ARCH"; then
+      log_info "replacing" "$version for $ARCH"
+      rm -rf "$dir"
+    else
+      set_version "$version"
+      exit
+    fi
   fi
 
   download_version "$version"

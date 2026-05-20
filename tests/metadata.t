@@ -17,8 +17,10 @@ run_with_fixture_metadata() {
     GOROOT="$GOROOT" \
     MOCK_ARCHIVE="$MOCK_ARCHIVE" \
     MOCK_ARCHIVE_SHA256="${MOCK_ARCHIVE_SHA256:-}" \
+    MOCK_FILE_OUTPUT="${MOCK_FILE_OUTPUT:-}" \
     MOCK_URL_LOG="${MOCK_URL_LOG:-}" \
     REAL_CURL="$(command -v curl)" \
+    REAL_FILE="$(command -v file)" \
     REAL_WGET="$(command -v wget)" \
     PATH="$mock_path:$GOPATH/bin:$PATH" \
     SHELL=/bin/bash \
@@ -82,6 +84,62 @@ test_expect_success 'download rejects archive with checksum mismatch' '
   fi &&
   grep "checksum mismatch" actual &&
   ! test -x "$GOROOT/.versions/1.22.2/bin/go"
+'
+
+test_expect_success 'install with matching arch override reuses existing version' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  mkdir -p "$GOROOT/.versions/1.22.2/bin" &&
+  {
+    echo "#!/bin/sh" &&
+    echo "echo go version go1.22.2 existing"
+  } >"$GOROOT/.versions/1.22.2/bin/go" &&
+  chmod +x "$GOROOT/.versions/1.22.2/bin/go" &&
+  MOCK_FILE_OUTPUT="ELF 64-bit LSB executable, x86-64" &&
+  MOCK_URL_LOG="$PWD/reuse-url.log" &&
+  export MOCK_FILE_OUTPUT MOCK_URL_LOG &&
+  output=$(run_with_fixture_metadata "$g_bin install 1.22.2 --os linux --arch amd64 && go version") &&
+  echo "$output" >actual &&
+  grep "go version go1.22.2 existing" actual &&
+  { test ! -e reuse-url.log || ! grep "go.dev" reuse-url.log; } &&
+  unset MOCK_FILE_OUTPUT MOCK_URL_LOG
+'
+
+test_expect_success 'install with mismatched arch override replaces existing version' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  mkdir -p "$GOROOT/.versions/1.22.2/bin" &&
+  {
+    echo "#!/bin/sh" &&
+    echo "echo old"
+  } >"$GOROOT/.versions/1.22.2/bin/go" &&
+  chmod +x "$GOROOT/.versions/1.22.2/bin/go" &&
+  MOCK_FILE_OUTPUT="ELF 64-bit LSB executable, x86-64" &&
+  MOCK_URL_LOG="$PWD/replace-url.log" &&
+  export MOCK_FILE_OUTPUT MOCK_URL_LOG &&
+  output=$(run_with_fixture_metadata "$g_bin install 1.22.2 --os linux --arch arm64") &&
+  echo "$output" >actual &&
+  grep "replacing" actual &&
+  grep "https://dl.google.com/go/go1.22.2.linux-arm64.tar.gz" replace-url.log &&
+  test -x "$GOROOT/.versions/1.22.2/bin/go" &&
+  unset MOCK_FILE_OUTPUT MOCK_URL_LOG
+'
+
+test_expect_success 'install with unknown installed arch replaces existing version' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  mkdir -p "$GOROOT/.versions/1.22.2/bin" &&
+  {
+    echo "#!/bin/sh" &&
+    echo "echo old"
+  } >"$GOROOT/.versions/1.22.2/bin/go" &&
+  chmod +x "$GOROOT/.versions/1.22.2/bin/go" &&
+  MOCK_FILE_OUTPUT="POSIX shell script text executable" &&
+  MOCK_URL_LOG="$PWD/unknown-url.log" &&
+  export MOCK_FILE_OUTPUT MOCK_URL_LOG &&
+  output=$(run_with_fixture_metadata "$g_bin install 1.22.2 --os linux --arch amd64") &&
+  echo "$output" >actual &&
+  grep "replacing" actual &&
+  grep "https://dl.google.com/go/go1.22.2.linux-amd64.tar.gz" unknown-url.log &&
+  test -x "$GOROOT/.versions/1.22.2/bin/go" &&
+  unset MOCK_FILE_OUTPUT MOCK_URL_LOG
 '
 
 test_expect_success 'archive mirror env override normalizes trailing slash' '

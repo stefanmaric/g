@@ -16,6 +16,7 @@ METADATA_URL="https://go.dev/dl/?mode=json"
 METADATA_ALL_URL="https://go.dev/dl/?mode=json&include=all"
 METADATA_LOCATION="$BASE_DIR/../tests/fixtures/go-dl.json"
 ARCHIVE_URL="https://dl.google.com/go/go1.22.2.linux-amd64.tar.gz"
+ARM64_ARCHIVE_URL="https://dl.google.com/go/go1.22.2.linux-arm64.tar.gz"
 MIRROR_ARCHIVE_URL="https://mirror.example/go/go1.22.2.linux-amd64.tar.gz"
 
 is_head=false
@@ -48,7 +49,7 @@ for item in "$@"; do
       cat "$METADATA_LOCATION"
     fi
     exit 0
-  elif [ "$item" = "$ARCHIVE_URL" ] || [ "$item" = "$MIRROR_ARCHIVE_URL" ]; then
+  elif [ "$item" = "$ARCHIVE_URL" ] || [ "$item" = "$ARM64_ARCHIVE_URL" ] || [ "$item" = "$MIRROR_ARCHIVE_URL" ]; then
     if [ "$is_head" = true ]; then
       echo 'HTTP/1.1 200 OK'
     else

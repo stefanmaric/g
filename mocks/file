@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# POSIX shell doesn't support errtrace nor pipefail.
+
+# Exit on error. Append "|| true" if you expect an error.
+set -o errexit
+# Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR.
+set -o nounset
+
+if [ -n "${MOCK_FILE_OUTPUT:-}" ]; then
+  printf '%s: %s\n' "$1" "$MOCK_FILE_OUTPUT"
+  exit 0
+fi
+
+command "${REAL_FILE:?}" "$@"
