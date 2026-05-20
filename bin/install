@@ -355,13 +355,13 @@ g_alias_defined() {
 exists() {
   case "$1" in
     zsh)
-      zsh -ci alias | grep "$2=" > /dev/null
+      zsh -ci alias 2> /dev/null | grep "$2=" > /dev/null
       ;;
     bash)
-      bash -ci alias | grep "$2=" > /dev/null
+      bash -ci alias 2> /dev/null | grep "$2=" > /dev/null
       ;;
     fish)
-      fish -c 'alias' | grep " $2 " > /dev/null
+      fish -c 'alias' 2> /dev/null | grep " $2 " > /dev/null
       ;;
     *)
       return 1
