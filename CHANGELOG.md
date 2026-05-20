@@ -12,6 +12,7 @@
 - Prevent duplicated shell selection during install
 - Suppress shell alias stderr logs during install
 - Add common command aliases
+- Fix tcsh shell detection during install
 
 ## 0.10.0 - 2023-06-10
 

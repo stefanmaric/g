@@ -94,7 +94,7 @@ if [ -n "${SHELL:-}" ]; then
   USER_SHELL=$(basename "$SHELL")
 fi
 
-SUPPORTED_SHELLS="ash dash bash csh tsch zsh fish"
+SUPPORTED_SHELLS="ash dash bash csh tcsh zsh fish"
 INSTALLED_SHELLS=""
 SELECTED_SHELLS=""
 
