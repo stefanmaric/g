@@ -338,6 +338,35 @@ download_file() {
   fi
 }
 
+sha256_file() {
+  file=$1
+
+  if command -v sha256sum > /dev/null; then
+    sha256sum "$file" | cut -d ' ' -f 1
+  elif command -v shasum > /dev/null; then
+    shasum -a 256 "$file" | cut -d ' ' -f 1
+  elif command -v openssl > /dev/null; then
+    openssl dgst -sha256 "$file" | sed 's/^.*= //'
+  else
+    error_and_abort "sha256sum, shasum, or openssl required"
+  fi
+}
+
+verify_sha256() {
+  file=$1
+  expected=$2
+
+  if [ -z "$expected" ]; then
+    error_and_abort "missing checksum for $file"
+  fi
+
+  actual=$(sha256_file "$file")
+
+  if [ "$actual" != "$expected" ]; then
+    error_and_abort "checksum mismatch for $file"
+  fi
+}
+
 strip_trailing_slashes() {
   value=$1
 
@@ -503,7 +532,11 @@ parse_metadata() {
   '
 }
 
-metadata_field() {
+#
+# Given a metadata record, print the selected field value.
+#
+
+pick_field() {
   field=$1
   record=$2
 
@@ -520,41 +553,31 @@ metadata_field() {
   done
 }
 
+#
+# Output all the versions in the provided metadata.
+#
+
 metadata_versions() {
   while IFS= read -r record; do
-    metadata_field version "$record"
+    pick_field version "$record"
   done
 }
 
-metadata_archive_record() {
+select_record() {
   version=$1
   os=$2
   arch=$3
 
   while IFS= read -r record; do
-    record_version=$(metadata_field version "$record")
-    record_kind=$(metadata_field kind "$record")
-    record_os=$(metadata_field os "$record")
-    record_arch=$(metadata_field arch "$record")
+    record_version=$(pick_field version "$record")
+    record_kind=$(pick_field kind "$record")
+    record_os=$(pick_field os "$record")
+    record_arch=$(pick_field arch "$record")
 
     if [ "$record_version" = "$version" ] && [ "$record_kind" = "archive" ] && [ "$record_os" = "$os" ] && [ "$record_arch" = "$arch" ]; then
       echo "$record"
       break
     fi
-  done
-}
-
-metadata_archive_filename() {
-  while IFS= read -r record; do
-    metadata_field filename "$record"
-    break
-  done
-}
-
-metadata_archive_sha256() {
-  while IFS= read -r record; do
-    metadata_field sha256 "$record"
-    break
   done
 }
 
@@ -680,39 +703,6 @@ get_target() {
   fi
 
   echo "$os $arch"
-}
-
-get_archive_filename() {
-  version=go$1
-  os=$2
-  arch=$3
-
-  get_metadata all \
-    | metadata_archive_record "$version" "$os" "$arch" \
-    | metadata_archive_filename
-}
-
-#
-# Assemble the tarball url for a given <version>.
-#
-
-get_tarball_url() {
-  version=$1
-
-  # The unquoted expansion here is intentional: get_target returns two fields.
-  # shellcheck disable=SC2046
-  set -- $(get_target)
-  os=$1
-  arch=$2
-  filename=$(get_archive_filename "$version" "$os" "$arch")
-
-  if [ -z "$filename" ]; then
-    error_and_abort "invalid version $version"
-  fi
-
-  base_url=$(strip_trailing_slashes "$GO_ARCHIVE_URL")
-
-  echo "$base_url/$filename"
 }
 
 #
@@ -895,7 +885,23 @@ download_version() {
   echo
   log_info "selected" "$version"
 
-  url=$(get_tarball_url "$version")
+  # The unquoted expansion here is intentional: get_target returns two fields.
+  # shellcheck disable=SC2046
+  set -- $(get_target)
+  os=$1
+  arch=$2
+
+  metadata=$(get_metadata all)
+  record=$(echo "$metadata" | select_record "go$version" "$os" "$arch")
+  filename=$(pick_field filename "$record")
+  sha256=$(pick_field sha256 "$record")
+
+  if [ -z "$filename" ]; then
+    error_and_abort "invalid version $version"
+  fi
+
+  base_url=$(strip_trailing_slashes "$GO_ARCHIVE_URL")
+  url="$base_url/$filename"
 
   if ! is_url_ok "$url"; then
     error_and_abort "invalid version $version"
@@ -910,12 +916,23 @@ download_version() {
   fi
 
   cd "$dir" || error_and_abort "cannot cd into $dir"
+  archive="$dir/$filename"
 
   log_info "downloading" "$url"
 
-  download_file "$url" | tar -zx --strip-components=1
+  download_file "$url" > "$archive"
 
   [ $QUIET = false ] && erase_line
+
+  log_info "verifying" "checksum ${sha256}"
+
+  verify_sha256 "$archive" "$sha256"
+
+  log_info "extracting" "$archive"
+
+  tar -zxf "$archive" --strip-components=1
+
+  rm -f "$archive"
 
   rm -f "$dir/g.lock"
 

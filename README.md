@@ -30,6 +30,7 @@ Existing version managers build go from source, have too many dependencies, poll
 
 - macOS, Linux or BSD environment. [Bash for Windows (WSL)](https://docs.microsoft.com/en-us/windows/wsl/about) is supported as well.
 - Either [`curl`](https://en.wikipedia.org/wiki/CURL) or [`wget`](https://en.wikipedia.org/wiki/Wget), check with `curl -V` or `wget -V` respectively.
+- One SHA-256 checksum tool: `sha256sum`, `shasum`, or `openssl`.
 
 Not strictly necessary, but highly recommended, to completely remove any previous go installation — just to prevent any weird outcome.
 
@@ -183,6 +184,7 @@ export G_GO_ARCHIVE_URL=https://dl.google.com/go
 Metadata is always read from the official Go download metadata endpoint.
 `--archive-url` and `G_GO_ARCHIVE_URL` only need to serve
 official Go archive filenames such as `go1.22.2.linux-amd64.tar.gz`.
+Downloaded archives are verified against the official metadata checksum before extraction.
 
 For example, to use the China-friendly official archive endpoint:
 

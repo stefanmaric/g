@@ -16,12 +16,23 @@ run_with_fixture_metadata() {
     GOPATH="$GOPATH" \
     GOROOT="$GOROOT" \
     MOCK_ARCHIVE="$MOCK_ARCHIVE" \
+    MOCK_ARCHIVE_SHA256="${MOCK_ARCHIVE_SHA256:-}" \
     MOCK_URL_LOG="${MOCK_URL_LOG:-}" \
     REAL_CURL="$(command -v curl)" \
     REAL_WGET="$(command -v wget)" \
     PATH="$mock_path:$GOPATH/bin:$PATH" \
     SHELL=/bin/bash \
     sh -c "$1"
+}
+
+sha256_file() {
+  if command -v sha256sum >/dev/null; then
+    sha256sum "$1" | cut -d ' ' -f 1
+  elif command -v shasum >/dev/null; then
+    shasum -a 256 "$1" | cut -d ' ' -f 1
+  else
+    openssl dgst -sha256 "$1" | sed 's/^.*= //'
+  fi
 }
 
 test_expect_success 'create mock Go archive' '
@@ -33,7 +44,8 @@ test_expect_success 'create mock Go archive' '
   chmod +x archive/go/bin/go &&
   tar -czf go1.22.2.linux-amd64.tar.gz -C archive go &&
   MOCK_ARCHIVE="$PWD/go1.22.2.linux-amd64.tar.gz" &&
-  export MOCK_ARCHIVE
+  MOCK_ARCHIVE_SHA256=$(sha256_file "$MOCK_ARCHIVE") &&
+  export MOCK_ARCHIVE MOCK_ARCHIVE_SHA256
 '
 
 test_expect_success 'list-all reads stable versions from Go metadata' '
@@ -60,6 +72,16 @@ test_expect_success 'download selects archive by version, os, arch, and kind' '
   grep "https://dl.google.com/go/go1.22.2.linux-amd64.tar.gz" default-url.log &&
   unset MOCK_URL_LOG &&
   test -x "$GOROOT/.versions/1.22.2/bin/go"
+'
+
+test_expect_success 'download rejects archive with checksum mismatch' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  bad_sha256=0000000000000000000000000000000000000000000000000000000000000000 &&
+  if run_with_fixture_metadata "MOCK_ARCHIVE_SHA256=$bad_sha256 $g_bin download 1.22.2 --os linux --arch amd64" >actual 2>&1; then
+    false
+  fi &&
+  grep "checksum mismatch" actual &&
+  ! test -x "$GOROOT/.versions/1.22.2/bin/go"
 '
 
 test_expect_success 'archive mirror env override normalizes trailing slash' '

@@ -42,7 +42,11 @@ for item in "$@"; do
     cat "$INSTALL_LOCATION"
     exit 0
   elif [ "$item" = "$METADATA_URL" ] || [ "$item" = "$METADATA_ALL_URL" ]; then
-    cat "$METADATA_LOCATION"
+    if [ -n "${MOCK_ARCHIVE_SHA256:-}" ]; then
+      sed "s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/$MOCK_ARCHIVE_SHA256/g" "$METADATA_LOCATION"
+    else
+      cat "$METADATA_LOCATION"
+    fi
     exit 0
   elif [ "$item" = "$ARCHIVE_URL" ] || [ "$item" = "$MIRROR_ARCHIVE_URL" ]; then
     if [ "$is_head" = true ]; then

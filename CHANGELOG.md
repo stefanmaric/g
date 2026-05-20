@@ -6,6 +6,7 @@
 - Replace ad-hoc Github Actions based tests with sharness
 - Replace HTML parsing with Go metadata version discovery
 - Add custom Go archive mirror support
+- Verify Go archive checksums before extracting downloads
 
 ## 0.10.0 - 2023-06-10
 
