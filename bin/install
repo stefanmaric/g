@@ -84,6 +84,7 @@ fi
 NON_INTERACTIVE=false
 
 G_DOWNLOAD_URL="https://git.io/g-bin"
+SHELLS_FILE=${G_SHELLS_FILE:-/etc/shells}
 
 COMMENT_MESSAGE="g-install: do NOT edit, see https://github.com/stefanmaric/g"
 
@@ -185,6 +186,27 @@ list_includes() {
   done
 
   return $found
+}
+
+add_installed_shell() {
+  shell_name=$1
+
+  # shellcheck disable=SC2086
+  if ! list_includes "$shell_name" $SUPPORTED_SHELLS; then
+    return
+  fi
+
+  # shellcheck disable=SC2086
+  if ! list_includes "$shell_name" $INSTALLED_SHELLS; then
+    INSTALLED_SHELLS="$INSTALLED_SHELLS $shell_name"
+  fi
+
+  if [ "$shell_name" = "$USER_SHELL" ]; then
+    # shellcheck disable=SC2086
+    if ! list_includes "$shell_name" $SELECTED_SHELLS; then
+      SELECTED_SHELLS="$SELECTED_SHELLS $shell_name"
+    fi
+  fi
 }
 
 #
@@ -540,31 +562,21 @@ initiate() {
 # Collect installed shells we support and pre-select user's login shell.
 #
 
-while IFS= read -r shell_path; do
-  if [ "$(echo "$shell_path" | cut -c1)" != "/" ]; then
-    continue
-  fi
-
-  shell_name=$(basename "$shell_path")
-
-  # Collect only supported shells.
-  # shellcheck disable=SC2086
-  if list_includes "$shell_name" $SUPPORTED_SHELLS; then
-    INSTALLED_SHELLS="$INSTALLED_SHELLS $shell_name"
-
-    # Select user's shell for configuration by default.
-    if [ "$shell_name" = "$USER_SHELL" ]; then
-      SELECTED_SHELLS="$SELECTED_SHELLS $shell_name"
+if [ -r "$SHELLS_FILE" ]; then
+  while IFS= read -r shell_path; do
+    if [ "$(echo "$shell_path" | cut -c1)" != "/" ]; then
+      continue
     fi
-  fi
-  # This file lists abs paths for installed shells. This at-bottom syntax is to
-  # prevent subshells and allow for the loop code to modify global variables.
-  # See: https://stackoverflow.com/questions/16854280/
-done < /etc/shells
 
-# This script is useless if it doesn't support any of user's installed shells.
-if [ "${#INSTALLED_SHELLS}" -eq 0 ]; then
-  error_and_abort "none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
+    add_installed_shell "$(basename "$shell_path")"
+    # This file lists abs paths for installed shells. This at-bottom syntax is to
+    # prevent subshells and allow for the loop code to modify global variables.
+    # See: https://stackoverflow.com/questions/16854280/
+  done < "$SHELLS_FILE"
+fi
+
+if [ "${#INSTALLED_SHELLS}" -eq 0 ] && [ -n "$USER_SHELL" ] && command -v "$USER_SHELL" > /dev/null; then
+  add_installed_shell "$USER_SHELL"
 fi
 
 #
@@ -582,7 +594,12 @@ while test $# -ne 0; do
           SELECTED_SHELLS="$SELECTED_SHELLS $1"
         fi
       elif list_includes "$1" $SUPPORTED_SHELLS; then
-        error_and_abort "$1 has been selected but is not installed"
+        if command -v "$1" > /dev/null; then
+          INSTALLED_SHELLS="$INSTALLED_SHELLS $1"
+          SELECTED_SHELLS="$SELECTED_SHELLS $1"
+        else
+          error_and_abort "$1 has been selected but is not installed"
+        fi
       else
         error_and_abort "unknown argument or shell \"$1\""
       fi
@@ -590,5 +607,10 @@ while test $# -ne 0; do
   esac
   shift
 done
+
+# This script is useless if it doesn't support any of user's installed shells.
+if [ "${#INSTALLED_SHELLS}" -eq 0 ]; then
+  error_and_abort "none of the supported shells seems installed, see: https://github.com/stefanmaric/g#manually"
+fi
 
 initiate
