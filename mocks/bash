@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# POSIX shell doesn't support errtrace nor pipefail.
+
+# Exit on error. Append "|| true" if you expect an error.
+set -o errexit
+# Do not allow use of undefined vars. Use ${VAR:-} to use an undefined VAR.
+set -o nounset
+
+if [ -n "${MOCK_BASH_ALIAS_OUTPUT:-}" ] && [ "${1:-}" = "-ci" ] && [ "${2:-}" = "alias" ]; then
+  printf '%s\n' "$MOCK_BASH_ALIAS_OUTPUT"
+  exit 0
+fi
+
+if [ -x /bin/bash ]; then
+  exec /bin/bash "$@"
+fi
+
+exec command -p bash "$@"

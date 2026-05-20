@@ -14,6 +14,7 @@
 - Add common command aliases
 - Fix tcsh shell detection during install
 - Add missing items to gitignore
+- Increase g-install test coverage
 
 ## 0.10.0 - 2023-06-10
 

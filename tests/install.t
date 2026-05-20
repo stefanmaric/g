@@ -18,6 +18,7 @@ run_install() {
     GOPATH="$GOPATH" \
     GOROOT="$GOROOT" \
     G_SHELLS_FILE="${G_SHELLS_FILE:-$PWD/missing-shells}" \
+    MOCK_BASH_ALIAS_OUTPUT="${MOCK_BASH_ALIAS_OUTPUT:-}" \
     REAL_CURL="$real_curl" \
     REAL_WGET="$real_wget" \
     PATH="$mock_path:$GOPATH/bin:/bin:/usr/bin" \
@@ -66,6 +67,15 @@ test_expect_success 'installer rejects unavailable shell when shells file is mis
   grep "fish has been selected but is not installed" unavailable-output
 '
 
+test_expect_success 'installer rejects unsupported shell selection' '
+  rm -rf "$GOPATH" "$GOROOT" "$(bash_dotfile)" &&
+  create_existing_g &&
+  if run_install "/unknown/shell" powershell >unsupported-output 2>&1; then
+    false
+  fi &&
+  grep "unknown argument or shell \"powershell\"" unsupported-output
+'
+
 test_expect_success 'installer does not configure duplicate selected shells' '
   rm -rf "$GOPATH" "$GOROOT" "$(bash_dotfile)" &&
   create_existing_g &&
@@ -78,6 +88,25 @@ test_expect_success 'installer does not configure duplicate selected shells' '
   run_install "$(command -v bash)" "bash bash" >duplicate-output 2>&1 &&
   test "$(grep -c "configuring bash" duplicate-output)" = 1 &&
   unset G_SHELLS_FILE
+'
+
+test_expect_success 'installer rerun does not duplicate config line' '
+  rm -rf "$GOPATH" "$GOROOT" "$(bash_dotfile)" &&
+  create_existing_g &&
+  run_install "$(command -v bash)" >first-output 2>&1 &&
+  run_install "$(command -v bash)" >second-output 2>&1 &&
+  grep "skipping bash because g has been configured already" second-output &&
+  test "$(grep -c "g-install" "$(bash_dotfile)")" = 1
+'
+
+test_expect_success 'installer sets fallback alias when g alias already exists' '
+  rm -rf "$GOPATH" "$GOROOT" "$(bash_dotfile)" &&
+  create_existing_g &&
+  MOCK_BASH_ALIAS_OUTPUT="alias g=\"git\"" &&
+  export MOCK_BASH_ALIAS_OUTPUT &&
+  run_install "$(command -v bash)" >alias-output 2>&1 &&
+  grep "alias ggovm=\"\$GOPATH/bin/g\"" "$(bash_dotfile)" &&
+  unset MOCK_BASH_ALIAS_OUTPUT
 '
 
 test_done
