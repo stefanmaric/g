@@ -11,6 +11,7 @@
 - Support installing on systems without /etc/shells
 - Prevent duplicated shell selection during install
 - Suppress shell alias stderr logs during install
+- Add common command aliases
 
 ## 0.10.0 - 2023-06-10
 

@@ -164,6 +164,16 @@ curl -sSL https://git.io/g-install | sh -s
     -a, --arch                Override system architecture
     -u, --unstable            Include unstable versions in list
     --archive-url             Override Go archive base URL
+
+  Aliases:
+
+    g install                 use
+    g download                fetch
+    g run                     exec
+    g remove                  rm, uninstall
+    g list                    ls
+    g list-all                ls-remote, list-remote
+    g self-upgrade            self-update
 ```
 
 ### Download mirrors

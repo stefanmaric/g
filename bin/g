@@ -103,7 +103,17 @@ display_help() {
     -u, --unstable            Include unstable versions in list
     --archive-url             Override Go archive base URL
 
-  Visit https://github.com/stefanmaric/g to learn more about g.
+  Aliases:
+
+    g install                 use
+    g download                fetch
+    g run                     exec
+    g remove                  rm, uninstall
+    g list                    ls
+    g list-all                ls-remote, list-remote
+    g self-upgrade            self-update
+
+  Visit https://github.com/stefanmaric/g to learn more.
 EOF
 }
 
@@ -1128,7 +1138,7 @@ if [ $# -eq 0 ]; then
 else
   while test $# -ne 0; do
     case $1 in
-      install | set | download | run | remove | prune | which | list | list-all | self-upgrade) __cmd=$1 ;;
+      install | use | set | download | fetch | run | exec | remove | rm | uninstall | prune | which | list | ls | list-all | ls-remote | list-remote | self-upgrade | self-update) __cmd=$1 ;;
       -h | --help | help)
         display_help
         exit
@@ -1165,16 +1175,16 @@ else
   # The unquoted expansions here are intentional.
   # shellcheck disable=SC2086
   case $__cmd in
-    install) install_version $__cmd_args ;;
-    download) download_version $__cmd_args ;;
+    install | use) install_version $__cmd_args ;;
+    download | fetch) download_version $__cmd_args ;;
     set) set_version $__cmd_args ;;
-    run) run_with_version $__cmd_args ;;
-    remove) remove_versions $__cmd_args ;;
+    run | exec) run_with_version $__cmd_args ;;
+    remove | rm | uninstall) remove_versions $__cmd_args ;;
     prune) prune_versions ;;
     which) display_bin_path_for_version $__cmd_args ;;
-    list) display_installed_with_selected "$(get_current_version)" ;;
-    list-all) display_remote_versions ;;
-    self-upgrade) self_upgrade ;;
+    list | ls) display_installed_with_selected "$(get_current_version)" ;;
+    list-all | ls-remote | list-remote) display_remote_versions ;;
+    self-upgrade | self-update) self_upgrade ;;
     *) error_help_abort "Invalid command $__cmd" ;;
   esac
 fi

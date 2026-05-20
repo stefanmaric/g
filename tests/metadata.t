@@ -64,6 +64,15 @@ test_expect_success 'list-all --unstable includes unstable metadata versions' '
   grep "1.23rc1" actual
 '
 
+test_expect_success 'remote listing aliases read Go metadata' '
+  output=$(run_with_fixture_metadata "$g_bin ls-remote") &&
+  echo "$output" >actual &&
+  grep "1.22.2" actual &&
+  output=$(run_with_fixture_metadata "$g_bin list-remote") &&
+  echo "$output" >actual &&
+  grep "1.22.2" actual
+'
+
 test_expect_success 'download selects archive by version, os, arch, and kind' '
   MOCK_URL_LOG="$PWD/default-url.log" &&
   export MOCK_URL_LOG &&
@@ -73,6 +82,14 @@ test_expect_success 'download selects archive by version, os, arch, and kind' '
   grep "https://go.dev/dl/?mode=json&include=all" default-url.log &&
   grep "https://dl.google.com/go/go1.22.2.linux-amd64.tar.gz" default-url.log &&
   unset MOCK_URL_LOG &&
+  test -x "$GOROOT/.versions/1.22.2/bin/go"
+'
+
+test_expect_success 'fetch alias downloads archive' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  output=$(run_with_fixture_metadata "$g_bin fetch 1.22.2 --os linux --arch amd64") &&
+  echo "$output" >actual &&
+  grep "downloaded: 1.22.2" actual &&
   test -x "$GOROOT/.versions/1.22.2/bin/go"
 '
 
@@ -102,6 +119,15 @@ test_expect_success 'install with matching arch override reuses existing version
   grep "go version go1.22.2 existing" actual &&
   { test ! -e reuse-url.log || ! grep "go.dev" reuse-url.log; } &&
   unset MOCK_FILE_OUTPUT MOCK_URL_LOG
+'
+
+test_expect_success 'use alias installs and switches version' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  output=$(run_with_fixture_metadata "$g_bin use 1.22.2 --os linux --arch amd64 && go version") &&
+  echo "$output" >actual &&
+  grep "installed: go" actual &&
+  grep "go" actual &&
+  test -x "$GOROOT/.versions/1.22.2/bin/go"
 '
 
 test_expect_success 'install with mismatched arch override replaces existing version' '
@@ -167,6 +193,28 @@ test_expect_success 'archive URL command argument takes precedence over env var'
   grep "https://mirror.example/go/go1.22.2.linux-amd64.tar.gz" cli-url.log &&
   unset MOCK_URL_LOG &&
   test -x "$GOROOT/.versions/1.22.2/bin/go"
+'
+
+test_expect_success 'installed version aliases work' '
+  output=$(run_with_fixture_metadata "$g_bin ls") &&
+  echo "$output" >actual &&
+  grep "1.22.2" actual &&
+  output=$(run_with_fixture_metadata "$g_bin exec 1.22.2 version") &&
+  echo "$output" >actual &&
+  grep "go" actual &&
+  run_with_fixture_metadata "$g_bin rm 1.22.2" &&
+  ! test -d "$GOROOT/.versions/1.22.2" &&
+  run_with_fixture_metadata "$g_bin use 1.22.2 --os linux --arch amd64" &&
+  test -d "$GOROOT/.versions/1.22.2" &&
+  run_with_fixture_metadata "$g_bin uninstall 1.22.2" &&
+  ! test -d "$GOROOT/.versions/1.22.2"
+'
+
+test_expect_success 'self-update alias runs self-upgrade' '
+  if run_with_fixture_metadata "$g_bin self-update" >actual 2>&1; then
+    false
+  fi &&
+  grep "self-upgrade command" actual
 '
 
 test_done
