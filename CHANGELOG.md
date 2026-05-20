@@ -9,6 +9,7 @@
 - Verify Go archive checksums before extracting downloads
 - Replace installed version on explicit arch override mismatch
 - Support installing on systems without /etc/shells
+- Prevent duplicated shell selection during install
 
 ## 0.10.0 - 2023-06-10
 

@@ -17,7 +17,7 @@ run_install() {
     HOME="$HOME" \
     GOPATH="$GOPATH" \
     GOROOT="$GOROOT" \
-    G_SHELLS_FILE="$PWD/missing-shells" \
+    G_SHELLS_FILE="${G_SHELLS_FILE:-$PWD/missing-shells}" \
     REAL_CURL="$real_curl" \
     REAL_WGET="$real_wget" \
     PATH="$mock_path:$GOPATH/bin:/bin:/usr/bin" \
@@ -64,6 +64,20 @@ test_expect_success 'installer rejects unavailable shell when shells file is mis
     false
   fi &&
   grep "fish has been selected but is not installed" unavailable-output
+'
+
+test_expect_success 'installer does not configure duplicate selected shells' '
+  rm -rf "$GOPATH" "$GOROOT" "$(bash_dotfile)" &&
+  create_existing_g &&
+  {
+    echo "$(command -v bash)" &&
+    echo "$(command -v bash)"
+  } >shells &&
+  G_SHELLS_FILE="$PWD/shells" &&
+  export G_SHELLS_FILE &&
+  run_install "$(command -v bash)" "bash bash" >duplicate-output 2>&1 &&
+  test "$(grep -c "configuring bash" duplicate-output)" = 1 &&
+  unset G_SHELLS_FILE
 '
 
 test_done

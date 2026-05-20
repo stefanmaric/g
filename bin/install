@@ -202,10 +202,16 @@ add_installed_shell() {
   fi
 
   if [ "$shell_name" = "$USER_SHELL" ]; then
-    # shellcheck disable=SC2086
-    if ! list_includes "$shell_name" $SELECTED_SHELLS; then
-      SELECTED_SHELLS="$SELECTED_SHELLS $shell_name"
-    fi
+    add_selected_shell "$shell_name"
+  fi
+}
+
+add_selected_shell() {
+  shell_name=$1
+
+  # shellcheck disable=SC2086
+  if ! list_includes "$shell_name" $SELECTED_SHELLS; then
+    SELECTED_SHELLS="$SELECTED_SHELLS $shell_name"
   fi
 }
 
@@ -589,14 +595,11 @@ while test $# -ne 0; do
     *)
       # shellcheck disable=SC2086
       if list_includes "$1" $INSTALLED_SHELLS; then
-        # shellcheck disable=SC2086
-        if ! list_includes "$1" $SELECTED_SHELLS; then
-          SELECTED_SHELLS="$SELECTED_SHELLS $1"
-        fi
+        add_selected_shell "$1"
       elif list_includes "$1" $SUPPORTED_SHELLS; then
         if command -v "$1" > /dev/null; then
-          INSTALLED_SHELLS="$INSTALLED_SHELLS $1"
-          SELECTED_SHELLS="$SELECTED_SHELLS $1"
+          add_installed_shell "$1"
+          add_selected_shell "$1"
         else
           error_and_abort "$1 has been selected but is not installed"
         fi
