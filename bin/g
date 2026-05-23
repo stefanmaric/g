@@ -177,6 +177,25 @@ read_user_input() {
   stty "$file_option" "$input_device" "$saved_tty_settings"
 }
 
+path_includes() {
+  search_path=$1
+
+  old_ifs=$IFS
+  IFS=:
+
+  # The unquoted expansion here is intentional: PATH entries are separated by ':'.
+  # shellcheck disable=SC2086
+  for path_entry in $PATH; do
+    if [ "$path_entry" = "$search_path" ]; then
+      IFS=$old_ifs
+      return 0
+    fi
+  done
+
+  IFS=$old_ifs
+  return 1
+}
+
 #
 # Add styles to text.
 #
@@ -1108,7 +1127,7 @@ fi
 
 BIN_DIR="$GOPATH/bin"
 
-if [ "${PATH##*"$BIN_DIR"*}" = "$PATH" ]; then
+if ! path_includes "$BIN_DIR"; then
   error_help_abort "\$GOPATH/bin not found in \$PATH and it is required."
 fi
 

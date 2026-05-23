@@ -17,6 +17,7 @@
 - Increase g-install test coverage
 - Improve ash/dash ENV install guidance
 - Improve handling of unknown version, OS, or architecture
+- Match GOPATH bin as an exact PATH entry
 
 ## 0.10.0 - 2023-06-10
 

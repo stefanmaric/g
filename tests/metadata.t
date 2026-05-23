@@ -27,6 +27,16 @@ run_with_fixture_metadata() {
     sh -c "$1"
 }
 
+run_with_path() {
+  env \
+    HOME="$HOME" \
+    GOPATH="$GOPATH" \
+    GOROOT="$GOROOT" \
+    PATH="$1" \
+    SHELL=/bin/bash \
+    sh -c "$2"
+}
+
 sha256_file() {
   if command -v sha256sum >/dev/null; then
     sha256sum "$1" | cut -d ' ' -f 1
@@ -48,6 +58,18 @@ test_expect_success 'create mock Go archive' '
   MOCK_ARCHIVE="$PWD/go1.22.2.linux-amd64.tar.gz" &&
   MOCK_ARCHIVE_SHA256=$(sha256_file "$MOCK_ARCHIVE") &&
   export MOCK_ARCHIVE MOCK_ARCHIVE_SHA256
+'
+
+test_expect_success 'g accepts exact GOPATH bin PATH entry' '
+  output=$(run_with_path "$GOPATH/bin:$mock_path:/bin:/usr/bin" "$g_bin --version") &&
+  test "$output" = "0.10.0"
+'
+
+test_expect_success 'g rejects substring-only GOPATH bin PATH entry' '
+  if run_with_path "$GOPATH/bin-old:$mock_path:/bin:/usr/bin" "$g_bin --version" >actual 2>&1; then
+    false
+  fi &&
+  grep "\$GOPATH/bin not found in \$PATH" actual
 '
 
 test_expect_success 'list-all reads stable versions from Go metadata' '
