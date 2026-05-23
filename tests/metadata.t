@@ -103,6 +103,20 @@ test_expect_success 'download rejects archive with checksum mismatch' '
   ! test -x "$GOROOT/.versions/1.22.2/bin/go"
 '
 
+test_expect_success 'download reports unavailable operating system from metadata' '
+  if run_with_fixture_metadata "$g_bin download 1.22.2 --os solaris --arch amd64" >actual 2>&1; then
+    false
+  fi &&
+  grep "no Go archive found for version 1.22.2 on solaris/amd64" actual
+'
+
+test_expect_success 'download reports unavailable architecture from metadata' '
+  if run_with_fixture_metadata "$g_bin download 1.22.2 --os linux --arch mips" >actual 2>&1; then
+    false
+  fi &&
+  grep "no Go archive found for version 1.22.2 on linux/mips" actual
+'
+
 test_expect_success 'install with matching arch override reuses existing version' '
   rm -rf "$GOROOT/.versions/1.22.2" &&
   mkdir -p "$GOROOT/.versions/1.22.2/bin" &&

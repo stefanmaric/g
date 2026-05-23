@@ -16,6 +16,7 @@
 - Add missing items to gitignore
 - Increase g-install test coverage
 - Improve ash/dash ENV install guidance
+- Improve handling of unknown version, OS, or architecture
 
 ## 0.10.0 - 2023-06-10
 

@@ -734,6 +734,14 @@ get_target() {
     arch="$(normalize_arch "$(uname -m)")"
   fi
 
+  if [ -z "$os" ]; then
+    error_and_abort "cannot detect operating system; use --os"
+  fi
+
+  if [ -z "$arch" ]; then
+    error_and_abort "cannot detect architecture; use --arch"
+  fi
+
   echo "$os $arch"
 }
 
@@ -934,7 +942,7 @@ download_version() {
   sha256=$(pick_field sha256 "$record")
 
   if [ -z "$filename" ]; then
-    error_and_abort "invalid version $version"
+    error_and_abort "no Go archive found for version $version on $os/$arch"
   fi
 
   base_url=$(strip_trailing_slashes "$GO_ARCHIVE_URL")
