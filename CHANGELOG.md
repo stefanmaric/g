@@ -15,6 +15,7 @@
 - Fix tcsh shell detection during install
 - Add missing items to gitignore
 - Increase g-install test coverage
+- Improve ash/dash ENV install guidance
 
 ## 0.10.0 - 2023-06-10
 

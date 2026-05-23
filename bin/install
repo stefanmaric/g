@@ -254,7 +254,7 @@ get_dotfile_for_shell() {
     tcsh) echo "$HOME/.tcshrc" ;;
     ash | dash)
       if [ -z "${ENV:-}" ] || [ ! -f "$ENV" ]; then
-        error_and_abort "for ash and dash, the \$ENV var must be properly configured"
+        error_and_abort "$1 requires the \$ENV var to point to an existing startup file, for example: ENV=\$HOME/.profile g-install $1"
       else
         echo "$ENV"
       fi

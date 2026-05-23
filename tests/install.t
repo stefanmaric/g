@@ -17,6 +17,7 @@ run_install() {
     HOME="$HOME" \
     GOPATH="$GOPATH" \
     GOROOT="$GOROOT" \
+    ENV="${ENV:-}" \
     G_SHELLS_FILE="${G_SHELLS_FILE:-$PWD/missing-shells}" \
     MOCK_BASH_ALIAS_OUTPUT="${MOCK_BASH_ALIAS_OUTPUT:-}" \
     REAL_CURL="$real_curl" \
@@ -74,6 +75,28 @@ test_expect_success 'installer rejects unsupported shell selection' '
     false
   fi &&
   grep "unknown argument or shell \"powershell\"" unsupported-output
+'
+
+test_expect_success 'installer explains ash ENV requirement' '
+  rm -rf "$GOPATH" "$GOROOT" "$HOME/.profile" &&
+  create_existing_g &&
+  if run_install "/unknown/shell" ash >ash-missing-env-output 2>&1; then
+    false
+  fi &&
+  grep "ash requires the \$ENV var" ash-missing-env-output &&
+  grep "ENV=\$HOME/.profile g-install ash" ash-missing-env-output
+'
+
+test_expect_success 'installer configures ash when ENV exists' '
+  rm -rf "$GOPATH" "$GOROOT" "$HOME/.profile" &&
+  create_existing_g &&
+  touch "$HOME/.profile" &&
+  ENV="$HOME/.profile" &&
+  export ENV &&
+  run_install "/unknown/shell" ash >ash-output 2>&1 &&
+  grep "configuring ash in $HOME/.profile" ash-output &&
+  grep "g-install" "$HOME/.profile" &&
+  unset ENV
 '
 
 test_expect_success 'installer does not configure duplicate selected shells' '
