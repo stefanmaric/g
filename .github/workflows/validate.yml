@@ -8,7 +8,7 @@ permissions:
 jobs:
   lint:
     name: Lint code base
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
@@ -24,18 +24,31 @@ jobs:
         run: make lint
 
   test:
-    name: Test
-    runs-on: ubuntu-latest
+    name: Test (${{ matrix.image }})
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:26.04
+            prepare: apt-get update && apt-get install -y --no-install-recommends ca-certificates curl file make wget xz-utils
+          - image: debian:13-slim
+            prepare: apt-get update && apt-get install -y --no-install-recommends ca-certificates curl file make wget xz-utils
+          - image: alpine:3.23
+            prepare: apk add --no-cache bash ca-certificates curl file make wget xz
+          - image: fedora:44
+            prepare: dnf install -y ca-certificates curl file make wget xz
+
+    container:
+      image: ${{ matrix.image }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Cache dev dependencies
-        uses: actions/cache@v5
-        with:
-          path: ./.tmp
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('./Makefile') }}
+      - name: Install dependencies
+        run: ${{ matrix.prepare }}
 
       - name: Run tests with sharness
         run: make test

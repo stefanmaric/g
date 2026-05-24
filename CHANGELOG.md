@@ -20,6 +20,7 @@
 - Match GOPATH bin as an exact PATH entry
 - Improve incomplete install recovery guidance
 - Improve README
+- Expand CI test coverage across Linux distros
 
 ## 0.10.0 - 2023-06-10
 
