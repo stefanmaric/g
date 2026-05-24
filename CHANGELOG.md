@@ -18,6 +18,7 @@
 - Improve ash/dash ENV install guidance
 - Improve handling of unknown version, OS, or architecture
 - Match GOPATH bin as an exact PATH entry
+- Improve incomplete install recovery guidance
 
 ## 0.10.0 - 2023-06-10
 

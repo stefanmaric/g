@@ -166,6 +166,17 @@ test_expect_success 'use alias installs and switches version' '
   test -x "$GOROOT/.versions/1.22.2/bin/go"
 '
 
+test_expect_success 'set reports incomplete installation with recovery guidance' '
+  rm -rf "$GOROOT/.versions/1.22.2" &&
+  mkdir -p "$GOROOT/.versions/1.22.2" &&
+  touch "$GOROOT/.versions/1.22.2/g.lock" &&
+  if run_with_fixture_metadata "$g_bin set 1.22.2" >actual 2>&1; then
+    false
+  fi &&
+  grep "version 1.22.2 installation is incomplete" actual &&
+  grep "g remove 1.22.2" actual
+'
+
 test_expect_success 'install with mismatched arch override replaces existing version' '
   rm -rf "$GOROOT/.versions/1.22.2" &&
   mkdir -p "$GOROOT/.versions/1.22.2/bin" &&

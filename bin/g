@@ -910,7 +910,7 @@ set_version() {
       ln -sf "$GOROOT/bin/$(basename "$file")" "$GOPATH/bin/"
     done
   else
-    error_and_abort "version $version installation might be corrupted"
+    error_and_abort "version $version installation is incomplete; run 'g remove $version' and try again"
   fi
 }
 
