@@ -19,6 +19,7 @@
 - Improve handling of unknown version, OS, or architecture
 - Match GOPATH bin as an exact PATH entry
 - Improve incomplete install recovery guidance
+- Improve README
 
 ## 0.10.0 - 2023-06-10
 
