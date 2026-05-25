@@ -2,3 +2,4 @@
 tests/test-results/
 tests/trash directory.*/
 .DS_Store
+release-notes.md

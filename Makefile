@@ -36,6 +36,10 @@ test: prepare
 		SHARNESS_PATH=./.tmp/sharness.sh sh "$$test" || exit 1; \
 	done
 
+.PHONY: release
+release:
+	@sh bin/release '$(VERSION)'
+
 .tmp/shellcheck:
 	@echo "Downloading shellcheck"
 	@echo

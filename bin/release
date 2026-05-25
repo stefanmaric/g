@@ -1,0 +1,224 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+#
+# Usage.
+#
+
+usage() {
+  cat <<- EOF
+  Usage: bin/release VERSION
+
+  Creates a release commit, annotated tag, and GitHub release for VERSION.
+  The GitHub release is not marked as latest automatically.
+EOF
+}
+
+die() {
+  printf '%s\n' "$1" >&2
+  exit 1
+}
+
+#
+# Environment helpers.
+#
+
+require_command() {
+  command -v "$1" > /dev/null 2>&1 || die "missing required command: $1"
+}
+
+current_branch() {
+  if [ -n "${GITHUB_REF_NAME:-}" ]; then
+    printf '%s\n' "$GITHUB_REF_NAME"
+    return
+  fi
+
+  git symbolic-ref --quiet --short HEAD
+}
+
+default_branch() {
+  if [ -n "${DEFAULT_BRANCH:-}" ]; then
+    printf '%s\n' "$DEFAULT_BRANCH"
+    return
+  fi
+
+  origin_head=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2> /dev/null || true)
+  [ -n "$origin_head" ] || die "cannot detect default branch; set DEFAULT_BRANCH"
+  printf '%s\n' "${origin_head#origin/}"
+}
+
+release_date() {
+  if [ -n "${RELEASE_DATE:-}" ]; then
+    printf '%s\n' "${RELEASE_DATE%%T*}"
+    return
+  fi
+
+  date +%Y-%m-%d
+}
+
+repository() {
+  if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    printf '%s\n' "$GITHUB_REPOSITORY"
+    return
+  fi
+
+  gh repo view --json nameWithOwner --jq .nameWithOwner
+}
+
+#
+# Release steps.
+#
+
+validate_version() {
+  case "$1" in
+    *[!0-9.]* | .* | *. | *..* | "")
+      die "invalid release version: $1"
+      ;;
+  esac
+
+  printf '%s\n' "$1" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
+    || die "release version must look like 0.11.0: $1"
+}
+
+validate_release_request() {
+  branch=$(current_branch)
+  default=$(default_branch)
+
+  [ "$branch" = "$default" ] \
+    || die "run releases from $default, not $branch"
+
+  git diff --quiet -- bin/g CHANGELOG.md \
+    || die "bin/g or CHANGELOG.md has uncommitted changes"
+
+  git rev-parse -q --verify "refs/tags/$version" > /dev/null \
+    && die "tag already exists: $version"
+
+  gh release view "$version" > /dev/null 2>&1 \
+    && die "release already exists: $version"
+}
+
+prepare_release_files() {
+  date=$(release_date)
+
+  awk -v version="$version" -v date="$date" '
+    BEGIN { inserted = 0; seen_unreleased = 0 }
+    /^## Unreleased$/ {
+      seen_unreleased = 1
+      print
+      next
+    }
+    seen_unreleased && !inserted && /^$/ {
+      print
+      print "## " version " - " date
+      print ""
+      inserted = 1
+      next
+    }
+    $0 == "## " version || index($0, "## " version " - ") == 1 {
+      printf "CHANGELOG.md already contains release %s\n", version > "/dev/stderr"
+      exit 1
+    }
+    { print }
+    END {
+      if (!seen_unreleased) {
+        print "CHANGELOG.md does not contain an Unreleased section" > "/dev/stderr"
+        exit 1
+      }
+      if (!inserted) {
+        print "could not insert release section" > "/dev/stderr"
+        exit 1
+      }
+    }
+  ' CHANGELOG.md > CHANGELOG.md.tmp
+  mv CHANGELOG.md.tmp CHANGELOG.md
+
+  awk -v version="$version" '
+    BEGIN { updated = 0 }
+    /^[[:space:]]*echo "[^"]+"$/ && in_version {
+      sub(/"[^"]+"/, "\"" version "\"")
+      updated++
+    }
+    /^display_g_version\(\) \{$/ { in_version = 1 }
+    in_version && /^\}$/ { in_version = 0 }
+    { print }
+    END {
+      if (updated != 1) {
+        print "could not update display_g_version()" > "/dev/stderr"
+        exit 1
+      }
+    }
+  ' bin/g > bin/g.tmp
+  mv bin/g.tmp bin/g
+
+  awk -v version="$version" '
+    index($0, "## " version " - ") == 1 { in_section = 1; next }
+    in_section && /^## / { exit }
+    in_section { print }
+  ' CHANGELOG.md > release-notes.md
+
+  awk 'index($0, "- ") == 1 { found = 1 } END { exit !found }' release-notes.md \
+    || die "release notes are empty; add entries under Unreleased first"
+
+  previous_tag=$(git describe --tags --abbrev=0)
+  repo=$(repository)
+  {
+    printf '\n'
+    printf 'See full changelog: https://github.com/%s/compare/%s...%s\n' \
+      "$repo" "$previous_tag" "$version"
+  } >> release-notes.md
+}
+
+validate_release_files() {
+  make format
+  make lint
+  make test
+}
+
+commit_and_tag_release() {
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    git config user.name 'github-actions[bot]'
+    git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+  fi
+
+  git add bin/g CHANGELOG.md
+  git commit -m "$version"
+  git tag -a "$version" -F release-notes.md
+  git push origin "HEAD:$(current_branch)" "$version"
+}
+
+create_github_release() {
+  gh release create "$version" \
+    --title "$version" \
+    --notes-file release-notes.md \
+    --latest=false \
+    bin/g \
+    bin/install
+}
+
+version=${1:-}
+
+if [ "$version" = "-h" ] || [ "$version" = "--help" ]; then
+  usage
+  exit 0
+fi
+
+[ -n "$version" ] || {
+  usage >&2
+  exit 1
+}
+
+require_command awk
+require_command date
+require_command gh
+require_command git
+require_command grep
+require_command make
+
+validate_version "$version"
+validate_release_request
+prepare_release_files
+validate_release_files
+commit_and_tag_release
+create_github_release
