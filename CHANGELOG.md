@@ -25,6 +25,7 @@
 - Ensure smoke tests use local scripts for bootstrap URLs
 - Improve install and download output layouts
 - Fix automated release process
+- Dummy
 
 ## 0.10.0 - 2023-06-10
 
