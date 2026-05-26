@@ -4,12 +4,52 @@ test_description='g smoke tests'
 
 . "${SHARNESS_PATH:-./.tmp/sharness.sh}"
 
-mock_path="$PWD/mocks"
+repo_root="$SHARNESS_BUILD_DIRECTORY"
+mock_path="$PWD/smoke-mocks"
 real_curl=$(command -v curl)
 real_wget=$(command -v wget)
 GOPATH="$HOME/go"
 GOROOT="$HOME/.go"
 export GOPATH GOROOT
+
+create_smoke_mocks() {
+  mkdir -p "$mock_path" &&
+  if [ -n "$real_curl" ]; then
+    cat >"$mock_path/curl" <<- EOF
+	#!/bin/sh
+	set -o errexit
+	set -o nounset
+
+	for item in "\$@"; do
+	  case \$item in
+	    https://git.io/g-install) cat "$repo_root/bin/install"; exit 0 ;;
+	    https://git.io/g-bin) cat "$repo_root/bin/g"; exit 0 ;;
+	  esac
+	done
+
+	exec "$real_curl" "\$@"
+EOF
+    chmod +x "$mock_path/curl"
+  fi
+
+  if [ -n "$real_wget" ]; then
+    cat >"$mock_path/wget" <<- EOF
+	#!/bin/sh
+	set -o errexit
+	set -o nounset
+
+	for item in "\$@"; do
+	  case \$item in
+	    https://git.io/g-install) cat "$repo_root/bin/install"; exit 0 ;;
+	    https://git.io/g-bin) cat "$repo_root/bin/g"; exit 0 ;;
+	  esac
+	done
+
+	exec "$real_wget" "\$@"
+EOF
+    chmod +x "$mock_path/wget"
+  fi
+}
 
 previous_stable_version() {
   "$real_curl" --fail --silent --show-error --location 'https://go.dev/dl/?mode=json' \
@@ -31,6 +71,7 @@ run_with_g_env() {
 }
 
 test_expect_success 'install script configures g' '
+  create_smoke_mocks &&
   env \
     HOME="$HOME" \
     GOPATH="$GOPATH" \
