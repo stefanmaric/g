@@ -936,6 +936,7 @@ install_version() {
   set_version "$version"
 
   log_info "installed" "$(go version)"
+  echo
 }
 
 #
@@ -946,7 +947,6 @@ download_version() {
   version=$(resolve_version_argument "$1")
   dir="$GO_VERSIONS_DIR/$version"
 
-  echo
   log_info "selected" "$version"
 
   # The unquoted expansion here is intentional: get_target returns two fields.
@@ -1203,7 +1203,10 @@ else
   # shellcheck disable=SC2086
   case $__cmd in
     install | use) install_version $__cmd_args ;;
-    download | fetch) download_version $__cmd_args ;;
+    download | fetch)
+      download_version $__cmd_args
+      echo
+      ;;
     set) set_version $__cmd_args ;;
     run | exec) run_with_version $__cmd_args ;;
     remove | rm | uninstall) remove_versions $__cmd_args ;;
