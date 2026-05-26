@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.11.0 - 2026-05-26
+
 - Upgrade all dev dependencies and CI environment
 - Replace ad-hoc Github Actions based tests with sharness
 - Replace HTML parsing with Go metadata version discovery
