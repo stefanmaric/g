@@ -92,11 +92,13 @@ validate_release_request() {
   git diff --quiet -- bin/g CHANGELOG.md \
     || die "bin/g or CHANGELOG.md has uncommitted changes"
 
-  git rev-parse -q --verify "refs/tags/$version" > /dev/null \
-    && die "tag already exists: $version"
+  if git rev-parse -q --verify "refs/tags/$version" > /dev/null; then
+    die "tag already exists: $version"
+  fi
 
-  gh release view "$version" > /dev/null 2>&1 \
-    && die "release already exists: $version"
+  if gh release view "$version" > /dev/null 2>&1; then
+    die "release already exists: $version"
+  fi
 }
 
 prepare_release_files() {
@@ -150,6 +152,7 @@ prepare_release_files() {
       }
     }
   ' bin/g > bin/g.tmp
+  chmod +x bin/g.tmp
   mv bin/g.tmp bin/g
 
   awk -v version="$version" '
@@ -171,6 +174,11 @@ prepare_release_files() {
 }
 
 validate_release_files() {
+  make format
+  make lint
+}
+
+validate_source_files() {
   make format
   make lint
   make test
@@ -218,6 +226,7 @@ require_command make
 
 validate_version "$version"
 validate_release_request
+validate_source_files
 prepare_release_files
 validate_release_files
 commit_and_tag_release

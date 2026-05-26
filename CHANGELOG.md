@@ -24,6 +24,7 @@
 - Add automated release process
 - Ensure smoke tests use local scripts for bootstrap URLs
 - Improve install and download output layouts
+- Fix automated release process
 
 ## 0.10.0 - 2023-06-10
 
