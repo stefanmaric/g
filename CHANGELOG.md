@@ -32,6 +32,13 @@
 - Fix Github Actions tests workflow on newer versions of Ubuntu
 - Fix g not activating selected version when system one is available
 
+## 0.9.2 - 2023-01-02
+
+- Add `zsh` tab completion, providing:
+    - Command selection
+    - Installed Go version list selection
+    - Remote Go version list selection
+
 ## 0.9.1 - 2022-10-23
 
 - Fix the grep warning: stray \ before " with the latest releases of grep (#22, thanks @wintermi)

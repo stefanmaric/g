@@ -1,0 +1,102 @@
+#compdef g
+
+# -----------------------------------------------------------------------------
+# Copyright 2023, Matthew Winter
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------------
+# Description
+# -----------
+#
+#  Completion script for g (https://github.com/stefanmaric/g).
+#
+# -----------------------------------------------------------------------------
+#
+# https://github.com/wintermi/zsh-golang
+#
+# -----------------------------------------------------------------------------
+
+_g() {
+    local line state
+
+    _arguments -C \
+        "1: :->cmds" \
+        "*::arg:->args"
+
+    case "$state" in
+        cmds)
+            _values "g command" \
+                "install[Download and set the go <version>]" \
+                "download[Download go <version>]" \
+                "remove[Remove the given versions]" \
+                "run[Run a given version of go]" \
+                "set[Switch to go <version>]" \
+                "which[Output bin path for <version>]" \
+                "prune[Remove all versions except the current version]" \
+                "list[Output downloaded go versions]" \
+                "list-all[Output all available, remote go versions]" \
+                "self-upgrade[Upgrades g to the latest version]" \
+                "help[Display help information, same as g --help]" \
+            ;;
+        args)
+            case $line[1] in
+                download)
+                    __remoteVersions
+                    ;;
+                install)
+                    _alternative \
+                        'args:latest:(latest)' \
+                        __remoteVersions
+                    ;;
+                remove | run | set | which)
+                    __installedVersions
+                    ;;
+                *)
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+# Completing list of Installed Versions
+__installedVersions() {
+  declare -a installed_versions_cmd
+  installed_versions_cmd=( $(ls -r "$GOROOT/.versions") )
+  _describe 'Installed Versions' installed_versions_cmd  -o nosort
+}
+
+# Completing list of Remote Versions
+__remoteVersions() {
+  declare -a remote_versions_cmd
+  remote_versions_cmd=( $(cat "$HOME/.cache/zsh-golang/go_versions") )
+  _describe 'Remote Versions' remote_versions_cmd  -o nosort
+}
+
+# TODO: add the completion for the Options
+
+# Completing 'g' Options
+__completeOptions() {
+    _arguments -s -S -C \
+      "(-h,--help)"{-h,--help}"[Display help information and exit]" \
+      "(-v,--version)"{-v,--version}"[Output current version of g and exit]" \
+      "(-q,--quiet)"{-q,--quiet}"[Suppress almost all output]" \
+      "(-c,--no-color)"{-c,--no-color}"[Force disabled color output]" \
+      "(-y,--non-interactive)"{-y,--non-interactive}"[Prevent prompts]" \
+      "(-o,--os)"{-o+,--os=}"[Override operating system]:string" \
+      "(-a,--arch)"{-a+,--arch=}"[Override system architecture]:string" \
+      "(u,--unstable)"{-u,--unstable}"[Include unstable versions in list]"
+}
+
+_g "$*"
+
+# vim:ft=zsh:et:sts=2:sw=2
