@@ -40,6 +40,10 @@ test: prepare
 release:
 	@sh bin/release '$(VERSION)'
 
+.PHONY: publish-release
+publish-release:
+	@sh bin/publish-release
+
 .tmp/shellcheck:
 	@echo "Downloading shellcheck"
 	@echo

@@ -1,0 +1,118 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+die() {
+  printf '%s\n' "$1" >&2
+  exit 1
+}
+
+require_command() {
+  command -v "$1" > /dev/null 2>&1 || die "missing required command: $1"
+}
+
+repository() {
+  if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    printf '%s\n' "$GITHUB_REPOSITORY"
+    return
+  fi
+
+  gh repo view --json nameWithOwner --jq .nameWithOwner
+}
+
+validate_version() {
+  case "$1" in
+    *[!0-9.]* | .* | *. | *..* | "") return 1 ;;
+  esac
+
+  printf '%s\n' "$1" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+}
+
+current_g_version() {
+  awk '
+    /^display_g_version\(\) \{$/ { in_version = 1; next }
+    in_version && /^[[:space:]]*echo "[^"]+"$/ {
+      sub(/^[[:space:]]*echo "/, "")
+      sub(/"$/, "")
+      print
+      exit
+    }
+  ' bin/g
+}
+
+validate_release_commit() {
+  g_version=$(current_g_version)
+
+  [ "$g_version" = "$version" ] \
+    || die "bin/g version is $g_version, expected $version"
+
+  grep "^## $version - " CHANGELOG.md > /dev/null \
+    || die "CHANGELOG.md does not contain release $version"
+
+  if git rev-parse -q --verify "refs/tags/$version" > /dev/null; then
+    die "tag already exists: $version"
+  fi
+
+  if gh release view "$version" > /dev/null 2>&1; then
+    die "release already exists: $version"
+  fi
+}
+
+write_release_notes() {
+  awk -v version="$version" '
+    index($0, "## " version " - ") == 1 { in_section = 1; next }
+    in_section && /^## / { exit }
+    in_section { print }
+  ' CHANGELOG.md > release-notes.md
+
+  awk 'index($0, "- ") == 1 { found = 1 } END { exit !found }' release-notes.md \
+    || die "release notes are empty"
+
+  previous_tag=$(git describe --tags --abbrev=0)
+  repo=$(repository)
+  {
+    printf '\n'
+    printf 'See full changelog: https://github.com/%s/compare/%s...%s\n' \
+      "$repo" "$previous_tag" "$version"
+  } >> release-notes.md
+}
+
+tag_release() {
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    git \
+      -c user.name='github-actions[bot]' \
+      -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+      tag -a "$version" -F release-notes.md
+  else
+    git tag -a "$version" -F release-notes.md
+  fi
+
+  git push origin "$version"
+}
+
+create_github_release() {
+  gh release create "$version" \
+    --title "$version" \
+    --notes-file release-notes.md \
+    --latest=false \
+    bin/g \
+    bin/install
+}
+
+require_command awk
+require_command gh
+require_command git
+require_command grep
+
+version=${1:-$(git log -1 --pretty=%s)}
+
+if ! validate_version "$version"; then
+  printf 'not a release commit: %s\n' "$version"
+  exit 0
+fi
+
+validate_release_commit
+write_release_notes
+tag_release
+create_github_release

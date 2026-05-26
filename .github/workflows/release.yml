@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: release
@@ -30,7 +31,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create release
+      - name: Create release pull request
         env:
           RELEASE_DATE: ${{ github.run_started_at }}
         run: make release VERSION='${{ inputs.version }}'

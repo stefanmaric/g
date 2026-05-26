@@ -11,8 +11,7 @@ usage() {
   cat <<- EOF
   Usage: bin/release VERSION
 
-  Creates a release commit, annotated tag, and GitHub release for VERSION.
-  The GitHub release is not marked as latest automatically.
+  Creates a release branch and pull request for VERSION.
 EOF
 }
 
@@ -85,6 +84,7 @@ validate_version() {
 validate_release_request() {
   branch=$(current_branch)
   default=$(default_branch)
+  release_branch="release/$version"
 
   [ "$branch" = "$default" ] \
     || die "run releases from $default, not $branch"
@@ -92,11 +92,17 @@ validate_release_request() {
   git diff --quiet -- bin/g CHANGELOG.md \
     || die "bin/g or CHANGELOG.md has uncommitted changes"
 
-  git rev-parse -q --verify "refs/tags/$version" > /dev/null \
-    && die "tag already exists: $version"
+  if git rev-parse -q --verify "refs/tags/$version" > /dev/null; then
+    die "tag already exists: $version"
+  fi
 
-  gh release view "$version" > /dev/null 2>&1 \
-    && die "release already exists: $version"
+  if gh release view "$version" > /dev/null 2>&1; then
+    die "release already exists: $version"
+  fi
+
+  if git ls-remote --exit-code --heads origin "$release_branch" > /dev/null 2>&1; then
+    die "release branch already exists: $release_branch"
+  fi
 }
 
 prepare_release_files() {
@@ -150,6 +156,7 @@ prepare_release_files() {
       }
     }
   ' bin/g > bin/g.tmp
+  chmod +x bin/g.tmp
   mv bin/g.tmp bin/g
 
   awk -v version="$version" '
@@ -173,28 +180,35 @@ prepare_release_files() {
 validate_release_files() {
   make format
   make lint
+}
+
+validate_source_files() {
+  make format
+  make lint
   make test
 }
 
-commit_and_tag_release() {
+create_release_pr() {
+  release_branch="release/$version"
+
+  git checkout -B "$release_branch"
+  git add bin/g CHANGELOG.md
+
   if [ -n "${GITHUB_ACTIONS:-}" ]; then
-    git config user.name 'github-actions[bot]'
-    git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+    git \
+      -c user.name='github-actions[bot]' \
+      -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+      commit -m "$version"
+  else
+    git commit -m "$version"
   fi
 
-  git add bin/g CHANGELOG.md
-  git commit -m "$version"
-  git tag -a "$version" -F release-notes.md
-  git push origin "HEAD:$(current_branch)" "$version"
-}
-
-create_github_release() {
-  gh release create "$version" \
+  git push --set-upstream origin "$release_branch"
+  gh pr create \
+    --base "$(default_branch)" \
+    --head "$release_branch" \
     --title "$version" \
-    --notes-file release-notes.md \
-    --latest=false \
-    bin/g \
-    bin/install
+    --body-file release-notes.md
 }
 
 version=${1:-}
@@ -218,7 +232,7 @@ require_command make
 
 validate_version "$version"
 validate_release_request
+validate_source_files
 prepare_release_files
 validate_release_files
-commit_and_tag_release
-create_github_release
+create_release_pr
