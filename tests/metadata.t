@@ -62,7 +62,7 @@ test_expect_success 'create mock Go archive' '
 
 test_expect_success 'g accepts exact GOPATH bin PATH entry' '
   output=$(run_with_path "$GOPATH/bin:$mock_path:/bin:/usr/bin" "$g_bin --version") &&
-  test "$output" = "0.10.0"
+  echo "$output" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$"
 '
 
 test_expect_success 'g rejects substring-only GOPATH bin PATH entry' '

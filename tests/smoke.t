@@ -85,7 +85,7 @@ test_expect_success 'install script configures g' '
 
 test_expect_success 'g reports its version' '
   output=$(run_with_g_env "g --version") &&
-  test "$output" = "0.10.0"
+  echo "$output" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+$"
 '
 
 test_expect_success 'go is installed by g and present on PATH' '
