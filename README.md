@@ -35,18 +35,18 @@ You most likely have them all already.
 
 ## Installation
 
-Before running any script, read it first: [`https://git.io/g-install`](https://git.io/g-install)
+Before running any script, read it first: [`https://github.com/stefanmaric/g/releases/latest/download/install`](https://github.com/stefanmaric/g/releases/latest/download/install)
 
 Then install with `curl`:
 
 ```shell
-curl -fsSL https://git.io/g-install | sh
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh
 ```
 
 Or with `wget`:
 
 ```shell
-wget -qO- https://git.io/g-install | sh
+wget -qO- https://github.com/stefanmaric/g/releases/latest/download/install | sh
 ```
 
 `g` uses the standard Go environment variables. The installer defaults to:
@@ -67,19 +67,19 @@ Restart your shell after installation so the new environment is loaded.
 Skip all prompts and assume "yes", will install the lastest Go version right away:
 
 ```shell
-curl -fsSL https://git.io/g-install | sh -s -- -y
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh -s -- -y
 ```
 
 Configure a specific shell:
 
 ```shell
-curl -fsSL https://git.io/g-install | sh -s -- zsh
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh -s -- zsh
 ```
 
 Configure more than one shell:
 
 ```shell
-curl -fsSL https://git.io/g-install | sh -s -- fish bash zsh
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh -s -- fish bash zsh
 ```
 
 The installer supports `bash`, `zsh`, `fish`, `ash`, `dash`, `csh`, and `tcsh`.
@@ -91,7 +91,7 @@ To choose different defaults, set `GOROOT` and `GOPATH` before installing:
 ```shell
 export GOROOT=$HOME/.local/share/golang
 export GOPATH=$HOME/go-projects
-curl -fsSL https://git.io/g-install | sh
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh
 ```
 
 For `fish`:
@@ -99,7 +99,7 @@ For `fish`:
 ```shell
 set -gx GOROOT $HOME/.local/share/golang
 set -gx GOPATH $HOME/go-projects
-curl -fsSL https://git.io/g-install | sh
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh
 ```
 
 ## Manual Installation

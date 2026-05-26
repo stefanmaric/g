@@ -83,7 +83,7 @@ fi
 
 NON_INTERACTIVE=false
 
-G_DOWNLOAD_URL="https://git.io/g-bin"
+G_DOWNLOAD_URL="https://github.com/stefanmaric/g/releases/latest/download/g"
 SHELLS_FILE=${G_SHELLS_FILE:-/etc/shells}
 
 COMMENT_MESSAGE="g-install: do NOT edit, see https://github.com/stefanmaric/g"

@@ -2,6 +2,102 @@
 
 ## Unreleased
 
+
+## 1.0.0 - 2026-05-26
+
+This release makes `g` safer, more reliable, and easier to install, while keeping the same tiny POSIX shell script you can inspect, copy, and patch.
+
+`g` is a simple Go version manager, gluten-free. It installs official prebuilt Go archives as an unprivileged user, keeps your environment simple, and avoids shims, plugins, daemons, and runtime dependencies.
+
+Release highlights include:
+
+- **Official Go metadata** for version discovery and archive selection
+- **SHA-256 verification** before extracting downloaded Go archives
+- **Archive mirror support** with upstream metadata as the trust source
+- **Hardened installer behavior** across common shells and Linux distributions
+- **GitHub Release assets** for fresh installs and self-upgrades
+- **Clearer errors and recovery guidance** for unsupported platforms and incomplete installs
+- **Expanded CI coverage** across pinned Linux environments
+- **Automated release publishing** for future releases
+
+### Upgrade now
+
+If you already have `g` installed, upgrade with:
+
+```sh
+g self-upgrade
+```
+
+For a fresh install:
+
+```sh
+curl -fsSL https://github.com/stefanmaric/g/releases/latest/download/install | sh
+```
+
+Or with `wget`:
+
+```sh
+wget -qO- https://github.com/stefanmaric/g/releases/latest/download/install | sh
+```
+
+### Official Go metadata
+
+`g` now uses Go's official download metadata instead of scraping version information from HTML.
+
+That means version discovery, archive selection, platform overrides, unstable releases, and checksum verification now all come from the same upstream source of truth.
+
+### Verified downloads
+
+Downloaded Go archives are now verified with SHA-256 checksums from official Go metadata before extraction.
+
+If a download is corrupted, incomplete, or unexpected, `g` stops before it can become an active Go installation.
+
+### Archive mirrors
+
+You can now download Go archives from a mirror while still trusting official Go metadata for version and checksum information.
+
+```sh
+G_GO_ARCHIVE_URL=https://mirror.example/golang g install latest
+```
+
+Or per command:
+
+```sh
+g install latest --archive-url https://mirror.example/golang
+```
+
+### A tougher installer
+
+The installer now handles more real-world systems and shells, including environments without `/etc/shells`, improved `ash` and `dash` setup guidance, fixed `tcsh` detection, duplicate shell selection prevention, and safer alias collision handling.
+
+The goal is still the same: configure `GOROOT`, `GOPATH`, and `$GOPATH/bin` with as little magic as possible.
+
+### GitHub Release assets
+
+Fresh installs and self-upgrades now use GitHub Release assets instead of deprecated `git.io` short links.
+
+This makes the install path more transparent, inspectable, and aligned with how releases are published.
+
+### Better CLI resilience
+
+`g` now reports clearer errors for unknown operating systems, unknown architectures, unsupported Go archive combinations, incomplete installs, and missing `$GOPATH/bin` entries in `PATH`.
+
+This release also adds familiar command aliases:
+
+```sh
+g use latest
+g fetch 1.22.2
+g ls
+g rm 1.21.9
+g self-update
+```
+
+### CI and releases
+
+The test suite now covers more metadata, checksum, installer, shell, and smoke-test behavior. CI also runs across pinned Linux environments to catch portability issues earlier.
+
+Future releases are now prepared through a release PR and published automatically after merge.
+
 ## 0.11.0 - 2026-05-26
 
 - Upgrade all dev dependencies and CI environment

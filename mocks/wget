@@ -8,9 +8,9 @@ set -o errexit
 set -o nounset
 
 BASE_DIR="$(dirname -- "$0")"
-G_URL="https://git.io/g-bin"
+G_URL="https://github.com/stefanmaric/g/releases/latest/download/g"
 G_LOCATION="$BASE_DIR/../bin/g"
-INSTALL_URL="https://git.io/g-install"
+INSTALL_URL="https://github.com/stefanmaric/g/releases/latest/download/install"
 INSTALL_LOCATION="$BASE_DIR/../bin/install"
 METADATA_URL="https://go.dev/dl/?mode=json"
 METADATA_ALL_URL="https://go.dev/dl/?mode=json&include=all"

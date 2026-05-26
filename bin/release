@@ -78,7 +78,7 @@ validate_version() {
   esac
 
   printf '%s\n' "$1" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
-    || die "release version must look like 0.11.0: $1"
+    || die "release version must look like 1.0.0: $1"
 }
 
 validate_release_request() {

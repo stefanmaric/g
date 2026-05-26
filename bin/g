@@ -65,7 +65,7 @@ esac
 #
 
 display_g_version() {
-  echo "0.11.0"
+  echo "1.0.0"
 }
 
 display_help() {
@@ -1109,9 +1109,9 @@ self_upgrade() {
   fi
 
   if command -v curl > /dev/null; then
-    curl -sSL https://git.io/g-install | sh -s -- -y
+    curl -sSL https://github.com/stefanmaric/g/releases/latest/download/install | sh -s -- -y
   elif command -v wget > /dev/null; then
-    wget -qO- https://git.io/g-install | sh -s -- -y
+    wget -qO- https://github.com/stefanmaric/g/releases/latest/download/install | sh -s -- -y
   else
     error_and_abort "curl or wget required"
   fi

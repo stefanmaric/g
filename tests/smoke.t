@@ -22,8 +22,8 @@ create_smoke_mocks() {
 
 	for item in "\$@"; do
 	  case \$item in
-	    https://git.io/g-install) cat "$repo_root/bin/install"; exit 0 ;;
-	    https://git.io/g-bin) cat "$repo_root/bin/g"; exit 0 ;;
+	    https://github.com/stefanmaric/g/releases/latest/download/install) cat "$repo_root/bin/install"; exit 0 ;;
+	    https://github.com/stefanmaric/g/releases/latest/download/g) cat "$repo_root/bin/g"; exit 0 ;;
 	  esac
 	done
 
@@ -40,8 +40,8 @@ EOF
 
 	for item in "\$@"; do
 	  case \$item in
-	    https://git.io/g-install) cat "$repo_root/bin/install"; exit 0 ;;
-	    https://git.io/g-bin) cat "$repo_root/bin/g"; exit 0 ;;
+	    https://github.com/stefanmaric/g/releases/latest/download/install) cat "$repo_root/bin/install"; exit 0 ;;
+	    https://github.com/stefanmaric/g/releases/latest/download/g) cat "$repo_root/bin/g"; exit 0 ;;
 	  esac
 	done
 
@@ -80,7 +80,7 @@ test_expect_success 'install script configures g' '
     REAL_WGET="$real_wget" \
     PATH="$mock_path:$PATH" \
     SHELL=/bin/bash \
-    sh -c "curl -sSL https://git.io/g-install | sh -s -- -y bash"
+    sh -c "curl -sSL https://github.com/stefanmaric/g/releases/latest/download/install | sh -s -- -y bash"
 '
 
 test_expect_success 'g reports its version' '
